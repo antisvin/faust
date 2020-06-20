@@ -70,10 +70,10 @@ bool Klass::getLoopProperty(Tree sig, Loop*& l)
  * Open a non-recursive loop on top of the stack of open loops.
  * @param size the number of iterations of the loop
  */
-void Klass::openLoop(const string& size)
+void Klass::openLoop(const string& size, const string& cond)
 {
-    fTopLoop = new Loop(fTopLoop, size);
-    // cerr << "\nOPEN SHARED LOOP(" << size << ") ----> " << fTopLoop << endl;
+    fTopLoop = new Loop(fTopLoop, size, cond);
+    cerr << "\nOPEN SHARED LOOP(" << size << ", " << cond << ") ----> " << fTopLoop << endl;
 }
 
 /**
@@ -81,15 +81,15 @@ void Klass::openLoop(const string& size)
  * @param recsymbol the recursive symbol defined in this loop
  * @param size the number of iterations of the loop
  */
-void Klass::openLoop(Tree recsymbol, const string& size)
+void Klass::openLoop(Tree recsymbol, const string& size, const string& cond)
 {
-    fTopLoop = new Loop(recsymbol, fTopLoop, size);
-    // cerr << "\nOPEN REC LOOP(" << *recsymbol << ", " << size << ") ----> " << fTopLoop << endl;
+    fTopLoop = new Loop(recsymbol, fTopLoop, size, cond);
+    cerr << "\nOPEN REC LOOP(" << *recsymbol << ", " << size << ", " << cond << ") ----> " << fTopLoop << endl;
 }
 
 void Klass::listAllLoopProperties(Tree sig, set<Loop*>& L, set<Tree>& visited)
 {
-    if (visited.count(sig)==0) {
+    if (visited.count(sig) == 0) {
         visited.insert(sig);
         Loop* l;
         if (getLoopProperty(sig, l)) {
@@ -112,28 +112,28 @@ void Klass::listAllLoopProperties(Tree sig, set<Loop*>& L, set<Tree>& visited)
 void Klass::closeLoop(Tree sig)
 {
     faustassert(fTopLoop);
-    
+
     // fix the missing dependencies
     set<Loop*> L;
-    set<Tree> V;
+    set<Tree>  V;
     listAllLoopProperties(sig, L, V);
     for (Loop* l : L) {
         fTopLoop->fBackwardLoopDependencies.insert(l);
     }
-  
+
     Loop* l  = fTopLoop;
     fTopLoop = l->fEnclosingLoop;
     faustassert(fTopLoop);
 
-    // l->println(4, cerr);
-    // cerr << endl;
+    l->println(4, cerr);
+    cerr << endl;
 
     Tree S = symlist(sig);
-    // cerr << "CLOSE LOOP :" << l << " with symbols " << *S << endl;
+    cerr << "CLOSE LOOP :" << l << " with symbols " << *S << endl;
     if (l->isEmpty() || fTopLoop->hasRecDependencyIn(S)) {
         // cout << " will absorb" << endl;
         // empty or dependent loop -> absorbed by enclosing one
-        // cerr << "absorbed by : " << fTopLoop << endl;
+        cerr << "absorbed by : " << fTopLoop << endl;
         fTopLoop->absorb(l);
         // delete l; HACK !!!
     } else {

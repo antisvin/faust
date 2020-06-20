@@ -32,6 +32,8 @@ class old_Occurences : public virtual Garbageable {
     int       fOccurences[4];  ///< Occurences count according to Contexts
     bool      fMultiOcc;       ///< True when exp has multiple occ. or occ. in higher ctxt
     bool      fOutDelayOcc;    ///< True when exp has at least one occ. outside a delay
+    bool      fIsControlled;   ///< True when the execution of this expression is controlled
+    bool      fIsCondition;    ///< True when this expression is used as a control condition
     int       fMinDelay;       ///< Minimal fix delay usage
     int       fMaxDelay;       ///< Maximal fix delay usage
     Tree      fExecCondition;  ///< When this expression must be computed
@@ -39,9 +41,13 @@ class old_Occurences : public virtual Garbageable {
    public:
     old_Occurences(int v, int r, Tree xc);
     old_Occurences* incOccurences(int v, int r, int d, Tree xc);  ///< inc occurences in context v,r,d,xc
+    old_Occurences* setIsCondition();                             ///< this is a control condition
+    old_Occurences* setIsControlled();                            ///< this is a controlled expressions
 
     bool hasMultiOccurences() const;     ///< true if multiple occurences or occ. in higher ctxt
     bool hasOutDelayOccurences() const;  ///< true if has occurences outside a a delay
+    bool isCondition() const;            ///< true if used as a control condition
+    bool isControlled() const;           ///< true if controlled by a condition
     int  getMaxDelay() const;            ///< return the maximal delay collected
     int  getMinDelay() const;            ///< return the minimal delay collected
     Tree getExecCondition() const;       ///< return the exec condition
