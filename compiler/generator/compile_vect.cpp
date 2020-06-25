@@ -203,7 +203,16 @@ string VectorCompiler::generateLoopCode(Tree sig)
                 string c = ScalarCompiler::generateCode(sig);
                 fClass->closeLoop(sig);
                 return c;
-            } else {
+            } /*else if (o->isCondition()) {
+                // TODO take into account sample-rate/controlled conditions
+                std::cerr << "COND: This is a condition " << ppsig(sig) << std::endl;
+                fClass->openLoop("count", "");
+                string c = ScalarCompiler::generateCode(sig);
+                fClass->addExecCode(Statement(subst("toto = $0;", c)));
+                fClass->closeLoop(sig);
+                return c;
+            }*/
+            else {
                 fClass->openLoop("count", "");
                 string c = ScalarCompiler::generateCode(sig);
                 fClass->closeLoop(sig);
@@ -232,6 +241,7 @@ string VectorCompiler::generateCacheCode(Tree sig, const string& exp)
     Type            t       = getCertifiedSigType(sig);
     old_Occurences* o       = fOccMarkup->retrieve(sig);
     bool            ctrl    = o->isControlled();
+    bool            cond    = o->isCondition();
     int             d       = o->getMaxDelay();
 
     if (t->variability() < kSamp) {
@@ -298,6 +308,13 @@ string VectorCompiler::generateCacheCode(Tree sig, const string& exp)
                 generateDelayLine(ctype, vname, d, exp, getConditionCode(sig));
                 setVectorNameProperty(sig, vname);
                 return subst("$0[i]", vname);
+            } else if (cond && !verySimple(sig)) {
+                // shared and not simple : we need a vector
+                // cerr << "ZEC : " << ppsig(sig) << endl;
+                getTypedNames(getCertifiedSigType(sig), "Kond", ctype, vname);
+                generateConditionLoop(ctype, vname, exp, "");
+                setVectorNameProperty(sig, vname);
+                return vname;
             } else {
                 // not shared or simple : no cache needed
                 return exp;
@@ -320,28 +337,42 @@ bool VectorCompiler::needSeparateLoop(Tree sig)
 
     int  i;
     Tree x, y;
-
+    cerr << "DO WE NEED A SEPARATE LOOP FOR: " << ppsig(sig) << " ?" << endl;
     if (o->getMaxDelay() > 0) {
         // cerr << "DLY "; // delayed expressions require a separate loop
+        cerr << "YES, reason " << __LINE__ << endl;
         b = true;
     } else if (verySimple(sig) || t->variability() < kSamp) {
         b = false;  // non sample computation never require a loop
+        cerr << "FALSE, reason " << __LINE__ << endl;
+
     } else if (isSigFixDelay(sig, x, y)) {
         b = false;  //
+        cerr << "FALSE, reason " << __LINE__ << endl;
+
     } else if (isProj(sig, &i, x)) {
         // cerr << "REC "; // recursive expressions require a separate loop
         b = true;
+        cerr << "YES, reason " << __LINE__ << endl;
     } else if ((c > 1) || (o->hasMultiOccurences())) {
         cerr << ppsig(sig) << " has multiple occurences " << std::endl;
         b = true;
+        cerr << "YES, reason " << __LINE__ << endl;
     } else if (o->isControlled()) {
         cerr << ppsig(sig) << " is controlled " << std::endl;
         b = true;
+        cerr << "YES, reason " << __LINE__ << endl;
+
+    } else if (o->isCondition()) {
+        cerr << ppsig(sig) << " is a condition that needs a separate loop ! " << std::endl;
+        b = true;
+        cerr << "YES, reason " << __LINE__ << endl;
 
     } else {
         // sample expressions that are not recursive, not delayed
         // and not shared, doesn't require a separate loop.
         b = false;
+        cerr << "FALSE, reason " << __LINE__ << endl;
     }
 
     if (b) {
@@ -469,6 +500,26 @@ void VectorCompiler::generateVectorLoop(const string& tname, const string& vecna
 
     // -- compute the new samples
     fClass->addExecCode(Statement(ccs, subst("$0[i] = $1;", vecname, cexp), subst("$0[i] = 0;", vecname)));
+}
+/**
+ * @brief Generate a special condition loop
+ *
+ * @param tname
+ * @param vecname
+ * @param cexp
+ * @param ccs
+ */
+void VectorCompiler::generateConditionLoop(const string& tname, const string& vecname, const string& cexp,
+                                           const string& ccs)
+{
+    // -- declare the vector
+    fClass->addSharedDecl(vecname);
+
+    // -- variables moved as class fields...
+    fClass->addZone1(subst("bool \t$0 = false;", vecname));
+
+    // -- compute the new samples
+    fClass->addExecCode(Statement(ccs, subst("$0 |= $1;", vecname, cexp), subst("$0 = false;", vecname)));
 }
 
 /**

@@ -41,8 +41,8 @@ class old_Occurences : public virtual Garbageable {
    public:
     old_Occurences(int v, int r, Tree xc);
     old_Occurences* incOccurences(int v, int r, int d, Tree xc);  ///< inc occurences in context v,r,d,xc
-    old_Occurences* setIsCondition();                             ///< this is a control condition
-    old_Occurences* setIsControlled();                            ///< this is a controlled expressions
+    old_Occurences* setAsCondition();                             ///< this is a control condition
+    old_Occurences* setAsControlled();                            ///< this is a controlled expressions
 
     bool hasMultiOccurences() const;     ///< true if multiple occurences or occ. in higher ctxt
     bool hasOutDelayOccurences() const;  ///< true if has occurences outside a a delay

@@ -57,6 +57,8 @@ class VectorCompiler : public ScalarCompiler {
     virtual void   generateVectorLoop(const string& tname, const string& dlname, const string& cexp, const string& ccs);
     virtual void   generateDlineLoop(const string& tname, const string& dlname, int delay, const string& cexp,
                                      const string& ccs);
+    virtual void   generateConditionLoop(const string& tname, const string& vecname, const string& cexp,
+                                         const string& ccs);
     virtual string generateWaveform(Tree sig);
 
     bool needSeparateLoop(Tree sig);

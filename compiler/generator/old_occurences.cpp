@@ -100,6 +100,23 @@ bool old_Occurences::isControlled() const
     return fIsControlled;
 }
 
+bool old_Occurences::isCondition() const
+{
+    return fIsCondition;
+}
+
+old_Occurences* old_Occurences::setAsControlled()
+{
+    fIsControlled = true;
+    return this;
+}
+
+old_Occurences* old_Occurences::setAsCondition()
+{
+    fIsCondition = true;
+    return this;
+}
+
 int old_Occurences::getMaxDelay() const
 {
     return fMaxDelay;
@@ -186,6 +203,7 @@ void old_OccMarkup::incOcc(Tree env, int v, int r, int d, Tree xc, Tree t)
             // x and y have implicit mutiple occurences
             incOcc(env, v0, r0, 0, c0, x);
             incOcc(env, v0, r0, 0, c0, y);
+            getOcc(y)->setAsCondition();
 
         } else {
             vector<Tree> br;
