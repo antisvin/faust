@@ -1517,17 +1517,19 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
 }
 
 /**
- * Generate code for the delay mecchanism without using temporary variables
+ * Generate code for the delay mechanism without using temporary variables
  */
 
 void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname, int mxd, const string& exp,
                                        const string& ccs)
 {
-    faustassert(ccs.size() == 0);
+    if (ccs.size() > 0) cerr << "DelayLine with condition " << ccs << endl;
+    // faustassert(ccs.size() == 0);
     if (mxd == 0) {
         // cerr << "MXD==0 :  " << vname << " := " << exp << endl;
         // no need for a real vector
-        fClass->addExecCode(Statement(subst("$0 \t$1 = $2;", ctype, vname, exp)));
+        fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
+        fClass->addExecCode(Statement(ccs, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
 
     } else if (mxd < gGlobal->gMaxCopyDelay) {
         // cerr << "small delay : " << vname << "[" << mxd << "]" << endl;
@@ -1535,15 +1537,15 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         // short delay : we copy
         fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(mxd + 1)));
-        fClass->addExecCode(Statement(subst("$0[0] = $1;", vname, exp)));
+        fClass->addExecCode(Statement(ccs, subst("$0[0] = $1;", vname, exp), subst("$0[0] = 0;", vname)));
 
         // generate post processing copy code to update delay values
         if (mxd == 1) {
-            fClass->addPostCode(Statement(subst("$0[1] = $0[0];", vname)));
+            fClass->addPostCode(Statement(ccs, subst("$0[1] = $0[0];", vname), ""));
         } else if (mxd == 2) {
-            fClass->addPostCode(Statement(subst("$0[2] = $0[1]; $0[1] = $0[0];", vname)));
+            fClass->addPostCode(Statement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), ""));
         } else {
-            fClass->addPostCode(Statement(subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname)));
+            fClass->addPostCode(Statement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), ""));
         }
 
     } else {
@@ -1558,7 +1560,8 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
         // execute
-        fClass->addExecCode(Statement(subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp)));
+        fClass->addExecCode(Statement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
+                                      subst("$0[IOTA&$1] = $0;", vname, T(N - 1))));
     }
 }
 
