@@ -151,17 +151,11 @@ static void printSameCondGroup(int n, const string& ccond, list<Statement>& grou
  */
 static void printlines(int n, list<Statement>& lines, ostream& fout)
 {
-    bool            newgroup = true;  // we are starting a new group of same condition
-    list<Statement> group;            // group of lines of same condition
-    string          ccond;            // current condition
+    list<Statement> group;  // group of  successive lines of same condition
+    string          ccond;  // current condition
 
     for (auto s : lines) {
-        if (newgroup) {
-            // we start a new group
-            group.clear();
-            ccond = s.condition();
-            group.push_back(s);
-        } else if (ccond == s.condition()) {
+        if (ccond == s.condition()) {
             // same group
             group.push_back(s);
         } else {
