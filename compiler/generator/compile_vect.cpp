@@ -594,14 +594,13 @@ void VectorCompiler::generateDlineLoop(const string& tname, const string& dlname
         fClass->addClearCode(subst("$0 = 0;", idx_save));
 
         // -- update index
-        fClass->addPreCode(Statement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), "// rien à faire  4"));
+        fClass->addPreCode(Statement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), ""));  // rien à faire  4
 
         // -- compute the new samples
-        fClass->addExecCode(
-            Statement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), "// rien à faire  5"));
+        fClass->addExecCode(Statement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), ""));
 
         // -- save index
-        fClass->addPostCode(Statement(ccs, subst("$0 = count;", idx_save), "// rien à faire  6"));
+        fClass->addPostCode(Statement(ccs, subst("$0 = count;", idx_save), ""));  // rien à faire  6
     }
 }
 
