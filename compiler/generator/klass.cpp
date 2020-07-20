@@ -505,6 +505,7 @@ void Klass::printLoopGraphVector(int n, ostream& fout)
     }
     fout << endl;
     setGlobalIndent(n);
+    // fout << B << endl;
     fout << lift(B) << endl;
 }
 

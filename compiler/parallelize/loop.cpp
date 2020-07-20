@@ -305,7 +305,7 @@ const string Loop::getCommonCondition()
  */
 static Statement old2newStatement(const OldStatement& s)
 {
-    if (s.hasCondition()) {
+    if (s.hasCondition() && (s.condition().size() > 0)) {
         if (s.elseCode() != "") {
             return cond(s.condition(), instr(s.thenCode()), instr(s.elseCode()));
         } else {
