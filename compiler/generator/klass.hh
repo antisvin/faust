@@ -38,12 +38,12 @@
 #include <set>
 #include <string>
 
+#include "graphSorting.hh"
+#include "loop.hh"
 #include "property.hh"
 #include "sigtype.hh"
 #include "tlib.hh"
 #include "uitree.hh"
-#include "graphSorting.hh"
-#include "loop.hh"
 
 using namespace std;
 
@@ -133,7 +133,8 @@ class Klass
 
     void setLoopProperty(Tree sig, Loop* l);   ///< Store the loop used to compute a signal
     bool getLoopProperty(Tree sig, Loop*& l);  ///< Returns the loop used to compute a signal
-    void listAllLoopProperties(Tree sig, set<Loop*>&, set<Tree>& visited);  ///< Returns all the loop used to compute a signal
+    void listAllLoopProperties(Tree       sig, set<Loop*>&,
+                               set<Tree>& visited);  ///< Returns all the loop used to compute a signal
 
     const string& getClassName() const { return fKlassName; }  ///< Returns the name of the class
 
@@ -181,9 +182,9 @@ class Klass
     void addZone3(const string& str) { fZone3Code.push_back(str); }
     void addZone4(const string& str) { fZone4Code.push_back(str); }
 
-    void addPreCode(const Statement& stmt) { fTopLoop->addPreCode(stmt); }
-    void addExecCode(const Statement& stmt) { fTopLoop->addExecCode(stmt); }
-    void addPostCode(const Statement& stmt) { fTopLoop->addPostCode(stmt); }
+    void addPreCode(const OldStatement& stmt) { fTopLoop->addPreCode(stmt); }
+    void addExecCode(const OldStatement& stmt) { fTopLoop->addExecCode(stmt); }
+    void addPostCode(const OldStatement& stmt) { fTopLoop->addPostCode(stmt); }
 
     virtual void println(int n, ostream& fout);
 

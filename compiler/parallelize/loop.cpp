@@ -32,10 +32,10 @@ using namespace std;
  * @param lines list of lines to be printed
  * @param fout output stream
  */
-static void XXXprintlines(int n, list<Statement>& lines, ostream& fout)
+static void XXXprintlines(int n, list<OldStatement>& lines, ostream& fout)
 {
-    list<Statement>::iterator s;
-    string                    ccond = "";
+    list<OldStatement>::iterator s;
+    string                       ccond = "";
     for (s = lines.begin(); s != lines.end(); s++) {
         if (s->hasCondition(ccond)) {
             tab(n, fout);
@@ -78,7 +78,7 @@ static void XXXprintlines(int n, list<Statement>& lines, ostream& fout)
  * @param lines
  * @param fout
  */
-static void printThenLines(int n, list<Statement>& lines, ostream& fout)
+static void printThenLines(int n, list<OldStatement>& lines, ostream& fout)
 {
     for (auto s : lines) {
         tab(n, fout);
@@ -93,7 +93,7 @@ static void printThenLines(int n, list<Statement>& lines, ostream& fout)
  * @param lines
  * @param fout
  */
-static void printElseLines(int n, list<Statement>& lines, ostream& fout)
+static void printElseLines(int n, list<OldStatement>& lines, ostream& fout)
 {
     for (auto s : lines) {
         if (s.elseCode().size() > 0) {
@@ -111,7 +111,7 @@ static void printElseLines(int n, list<Statement>& lines, ostream& fout)
  * @param group list of statements
  * @param fout output stream
  */
-static void printSameCondGroup(int n, const string& ccond, list<Statement>& group, ostream& fout)
+static void printSameCondGroup(int n, const string& ccond, list<OldStatement>& group, ostream& fout)
 {
     if (ccond.size() == 0) {
         printThenLines(n, group, fout);
@@ -149,10 +149,10 @@ static void printSameCondGroup(int n, const string& ccond, list<Statement>& grou
  * @param lines
  * @param fout
  */
-static void printlines(int n, list<Statement>& lines, ostream& fout)
+static void printlines(int n, list<OldStatement>& lines, ostream& fout)
 {
-    list<Statement> group;  // group of  successive lines of same condition
-    string          ccond;  // current condition
+    list<OldStatement> group;  // group of  successive lines of same condition
+    string             ccond;  // current condition
 
     for (auto s : lines) {
         if (ccond == s.condition()) {
@@ -233,7 +233,7 @@ bool Loop::isEmpty()
 /**
  * Add a line of pre code (begin of the loop)
  */
-void Loop::addPreCode(const Statement& stmt)
+void Loop::addPreCode(const OldStatement& stmt)
 {
     cerr << this << "->addExecCode " << stmt << endl;
     fPreCode.push_back(stmt);
@@ -242,7 +242,7 @@ void Loop::addPreCode(const Statement& stmt)
 /**
  * Add a line of exec code
  */
-void Loop::addExecCode(const Statement& stmt)
+void Loop::addExecCode(const OldStatement& stmt)
 {
     cerr << "LOOP : " << this << "->addExecCode " << stmt << endl;
     fExecCode.push_back(stmt);
@@ -251,7 +251,7 @@ void Loop::addExecCode(const Statement& stmt)
 /**
  * Add a line of post exec code (end of the loop)
  */
-void Loop::addPostCode(const Statement& stmt)
+void Loop::addPostCode(const OldStatement& stmt)
 {
     cerr << this << "->addPostCode " << stmt << endl;
     fPostCode.push_front(stmt);
@@ -294,6 +294,52 @@ const string Loop::getCommonCondition()
             }
         }
         return CC;
+    }
+}
+
+/**
+ * @brief convert an old statement into a new statement
+ *
+ * @param s
+ * @return Statement
+ */
+static Statement old2newStatement(const OldStatement& s)
+{
+    if (s.hasCondition()) {
+        if (s.elseCode() != "") {
+            return cond(s.condition(), instr(s.thenCode()), instr(s.elseCode()));
+        } else {
+            return cond(s.condition(), instr(s.thenCode()));
+        }
+    } else {
+        return instr(s.thenCode());
+    }
+}
+
+/**
+ * @brief convert a loop into a block of (new) statements
+ *
+ * @param b
+ */
+
+void Loop::loop2block(Block& b)
+{
+    for (Loop* l : fExtraLoops) {
+        l->loop2block(b);
+    }
+
+    if (fPreCode.size() + fExecCode.size() + fPostCode.size() > 0) {
+        for (auto s : fPreCode) b.push_back(old2newStatement(s));
+
+        if (fExecCode.size() > 0) {
+            Block l;
+            for (auto s : fExecCode) l.push_back(old2newStatement(s));
+            b.push_back(loop(subst("int i=0; i<$0; i++", fSize), l));
+        }
+
+        for (auto s : fPostCode) b.push_back(old2newStatement(s));
+    } else {
+        b.push_back(instr("// empty loop "));
     }
 }
 

@@ -497,15 +497,15 @@ void Klass::printLoopGraphVector(int n, ostream& fout)
 #endif
 
     // normal mode
+    Block B;
     for (int l = (int)G.size() - 1; l >= 0; l--) {
-        if (gGlobal->gVectorSwitch) {
-            tab(n, fout);
-            fout << "// Section : " << G.size() - l;
-        }
-        for (lset::const_iterator p = G[l].begin(); p != G[l].end(); p++) {
-            (*p)->println(n, fout);
+        for (auto p : G[l]) {
+            p->loop2block(B);
         }
     }
+    fout << endl;
+    setGlobalIndent(n);
+    fout << lift(B) << endl;
 }
 
 /**
@@ -947,7 +947,7 @@ void Klass::println(int n, ostream& fout)
     tab(n + 1, fout);
     fout << "}";
 
-    printComputeMethod(n, fout);
+    printComputeMethod(n, fout); /* YO */
 
     tab(n, fout);
     fout << "};\n" << endl;

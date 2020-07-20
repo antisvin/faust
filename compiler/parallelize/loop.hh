@@ -37,7 +37,8 @@
 #include <stack>
 #include <string>
 
-#include "statement.hh"
+#include "Statement.h"
+#include "oldstatement.hh"
 #include "tlib.hh"
 
 using namespace std;
@@ -53,11 +54,11 @@ struct Loop {
     const string fSize;           ///< number of iterations of the loop
     const string fCond;           ///< condition associated with the loop
     // fields concerned by absorbsion
-    set<Loop*>      fBackwardLoopDependencies;  ///< Loops that must be computed before this one
-    set<Loop*>      fForwardLoopDependencies;   ///< Loops that will be computed after this one
-    list<Statement> fPreCode;                   ///< code to execute at the begin of the loop
-    list<Statement> fExecCode;                  ///< code to execute in the loop
-    list<Statement> fPostCode;                  ///< code to execute at the end of the loop
+    set<Loop*>         fBackwardLoopDependencies;  ///< Loops that must be computed before this one
+    set<Loop*>         fForwardLoopDependencies;   ///< Loops that will be computed after this one
+    list<OldStatement> fPreCode;                   ///< code to execute at the begin of the loop
+    list<OldStatement> fExecCode;                  ///< code to execute in the loop
+    list<OldStatement> fPostCode;                  ///< code to execute at the end of the loop
     // for topological sort
     int fOrder;  ///< used during topological sort
     int fIndex;  ///< used during scheduler mode code generation
@@ -75,9 +76,9 @@ struct Loop {
     bool         isEmpty();                   ///< true when the loop doesn't contain any line of code
     bool         hasRecDependencyIn(Tree S);  ///< returns true is this loop or its ancestors define a symbol in S
 
-    void addPreCode(const Statement& str);      ///< add a line of C++ code pre code
-    void addExecCode(const Statement& str);     ///< add a line of C++ code
-    void addPostCode(const Statement& str);     ///< add a line of C++ post code
+    void addPreCode(const OldStatement& str);   ///< add a line of C++ code pre code
+    void addExecCode(const OldStatement& str);  ///< add a line of C++ code
+    void addPostCode(const OldStatement& str);  ///< add a line of C++ post code
     void println(int n, ostream& fout);         ///< print the loop
     void printParLoopln(int n, ostream& fout);  ///< print the loop with a #pragma omp loop
 
@@ -86,6 +87,9 @@ struct Loop {
     void absorb(Loop* l);  ///< absorb a loop inside this one
     // new method
     void concat(Loop* l);
+
+    // new statements and blocks
+    void loop2block(Block& b);
 };
 
 #endif

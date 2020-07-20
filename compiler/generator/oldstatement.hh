@@ -32,7 +32,7 @@
  * @brief A code statement, regular or if-then-else
  *
  */
-class Statement {
+class OldStatement {
    private:
     const bool        fHasCondition;
     const std::string fCondition;
@@ -40,11 +40,13 @@ class Statement {
     const std::string fElseCode;
 
    public:
-    Statement(const std::string& condition, const std::string& thencode, const std::string& elsecode)
+    OldStatement(const std::string& condition, const std::string& thencode, const std::string& elsecode)
         : fHasCondition(true), fCondition(condition), fThenCode(thencode), fElseCode(elsecode)
     {
     }
-    Statement(const std::string& thencode) : fHasCondition(false), fCondition(""), fThenCode(thencode), fElseCode("") {}
+    OldStatement(const std::string& thencode) : fHasCondition(false), fCondition(""), fThenCode(thencode), fElseCode("")
+    {
+    }
 
     bool               hasCondition() const { return fHasCondition; }
     bool               hasCondition(const std::string& cond) const { return (fCondition == cond); }
@@ -52,7 +54,7 @@ class Statement {
     const std::string& thenCode() const { return fThenCode; }
     const std::string& elseCode() const { return fElseCode; }
 
-    friend std::ostream& operator<<(std::ostream& out, const Statement& stmt)
+    friend std::ostream& operator<<(std::ostream& out, const OldStatement& stmt)
     {
         if (stmt.hasCondition()) {
             if (stmt.elseCode().size() > 0) {

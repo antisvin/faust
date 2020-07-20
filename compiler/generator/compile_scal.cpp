@@ -356,7 +356,7 @@ void ScalarCompiler::compileMultiSignal(Tree L)
 
     for (int i = 0; isList(L); L = tl(L), i++) {
         Tree sig = hd(L);
-        fClass->addExecCode(Statement(subst("output$0[i] = $2$1;", T(i), generateCacheCode(sig, CS(sig)), xcast())));
+        fClass->addExecCode(OldStatement(subst("output$0[i] = $2$1;", T(i), generateCacheCode(sig, CS(sig)), xcast())));
     }
 
     generateMetaData();
@@ -382,7 +382,7 @@ void ScalarCompiler::compileSingleSignal(Tree sig)
 {
     // contextor recursivness(0);
     sig = prepare2(sig);  // optimize and annotate expression
-    fClass->addExecCode(Statement(subst("output[i] = $0;", CS(sig))));
+    fClass->addExecCode(OldStatement(subst("output[i] = $0;", CS(sig))));
     generateUserInterfaceTree(prepareUserInterfaceTree(fUIRoot), true);
     generateMacroInterfaceTree("", prepareUserInterfaceTree(fUIRoot));
     if (fDescription) {
@@ -589,7 +589,7 @@ string ScalarCompiler::generateInput(Tree sig, const string& idx)
 string ScalarCompiler::generateOutput(Tree sig, const string& idx, const string& arg)
 {
     string dst = subst("output$0[i]", idx);
-    fClass->addExecCode(Statement(subst("$0 = $2$1;", dst, arg, xcast())));
+    fClass->addExecCode(OldStatement(subst("$0 = $2$1;", dst, arg, xcast())));
     return dst;
 }
 
@@ -761,7 +761,7 @@ string ScalarCompiler::generateVariableStore(Tree sig, const string& exp)
             fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
             fClass->addInitCode(subst("$0 = 0;", vname));
             fClass->addExecCode(
-                Statement(getConditionCode(sig), subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+                OldStatement(getConditionCode(sig), subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
             break;
     }
     return vname;
@@ -858,7 +858,7 @@ string ScalarCompiler::generateVBargraph(Tree sig, Tree path, Tree min, Tree max
 
         case kSamp:
             fClass->addExecCode(
-                Statement(getConditionCode(sig), subst("$0 = $1;", varname, exp), subst("$0 = 0;", varname)));
+                OldStatement(getConditionCode(sig), subst("$0 = $1;", varname, exp), subst("$0 = 0;", varname)));
             break;
     }
 
@@ -883,7 +883,7 @@ string ScalarCompiler::generateHBargraph(Tree sig, Tree path, Tree min, Tree max
             break;
 
         case kSamp:
-            fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 = $1;", varname, exp), "bof bof"));
+            fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", varname, exp), "bof bof"));
             break;
     }
 
@@ -1081,8 +1081,8 @@ string ScalarCompiler::generateWRTbl(Tree sig, Tree tbl, Tree idx, Tree data)
             fClass->addZone2(subst("$0[$1] = $2;", tblName, CS(idx), CS(data)));
             break;
         default:
-            fClass->addExecCode(Statement(getConditionCode(sig), subst("$0[$1] = $2;", tblName, CS(idx), CS(data)),
-                                          subst("$0[$1] = 0;", tblName, CS(idx))));
+            fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0[$1] = $2;", tblName, CS(idx), CS(data)),
+                                             subst("$0[$1] = 0;", tblName, CS(idx))));
             break;
     }
 
@@ -1192,8 +1192,8 @@ string ScalarCompiler::generatePrefix(Tree sig, Tree x, Tree e)
     fClass->addInitCode(subst("$0 = $1;", vperm, CS(x)));
     fClass->addInitCode(subst("$0 \t$1;", type, vtemp));
 
-    fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 = $1;", vtemp, vperm), subst("$0 = 0;", vtemp)));
-    fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 = $1;", vperm, CS(e)), subst("$0 = 0;", vperm)));
+    fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", vtemp, vperm), subst("$0 = 0;", vtemp)));
+    fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", vperm, CS(e)), subst("$0 = 0;", vperm)));
     return vtemp;
 }
 
@@ -1219,9 +1219,9 @@ string ScalarCompiler::generateIota(Tree sig, Tree n)
     fClass->addClearCode(subst("$0 = 0;", vperm));
 
     if (isPowerOf2(size)) {
-        fClass->addExecCode(Statement(subst("$0 = ($0+1)&$1;", vperm, T(size - 1))));
+        fClass->addExecCode(OldStatement(subst("$0 = ($0+1)&$1;", vperm, T(size - 1))));
     } else {
-        fClass->addExecCode(Statement(subst("if (++$0 == $1) $0=0;", vperm, T(size))));
+        fClass->addExecCode(OldStatement(subst("if (++$0 == $1) $0=0;", vperm, T(size))));
     }
     return vperm;
 }
@@ -1445,16 +1445,16 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             // short delay : we copy
             fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(mxd + 1)));
-            fClass->addExecCode(Statement(subst("$0[0] = $1;", vname, exp)));
+            fClass->addExecCode(OldStatement(subst("$0[0] = $1;", vname, exp)));
 
             // generate post processing copy code to update delay values
             if (mxd == 1) {
-                fClass->addPostCode(Statement(subst("$0[1] = $0[0];", vname)));
+                fClass->addPostCode(OldStatement(subst("$0[1] = $0[0];", vname)));
             } else if (mxd == 2) {
                 // fClass->addPostCode(subst("$0[2] = $0[1];", vname));
-                fClass->addPostCode(Statement(subst("$0[2] = $0[1]; $0[1] = $0[0];", vname)));
+                fClass->addPostCode(OldStatement(subst("$0[2] = $0[1]; $0[1] = $0[0];", vname)));
             } else {
-                fClass->addPostCode(Statement(subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname)));
+                fClass->addPostCode(OldStatement(subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname)));
             }
             setVectorNameProperty(sig, vname);
             return subst("$0[0]", vname);
@@ -1471,7 +1471,7 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
             // execute
-            fClass->addExecCode(Statement(subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp)));
+            fClass->addExecCode(OldStatement(subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp)));
             setVectorNameProperty(sig, vname);
             return subst("$0[IOTA&$1]", vname, T(N - 1));
         }
@@ -1481,17 +1481,17 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             // short delay : we copy
             fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(mxd + 1)));
-            fClass->addExecCode(Statement(ccs, subst("$0[0] = $1;", vname, exp), "//M DL 1"));
+            fClass->addExecCode(OldStatement(ccs, subst("$0[0] = $1;", vname, exp), "//M DL 1"));
 
             // generate post processing copy code to update delay values
             if (mxd == 1) {
-                fClass->addPostCode(Statement(ccs, subst("$0[1] = $0[0];", vname), "//M DL 2"));
+                fClass->addPostCode(OldStatement(ccs, subst("$0[1] = $0[0];", vname), "//M DL 2"));
             } else if (mxd == 2) {
                 // fClass->addPostCode(subst("$0[2] = $0[1];", vname));
-                fClass->addPostCode(Statement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), "//M DL 3"));
+                fClass->addPostCode(OldStatement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), "//M DL 3"));
             } else {
                 fClass->addPostCode(
-                    Statement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), "//M DL 4"));
+                    OldStatement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), "//M DL 4"));
             }
             setVectorNameProperty(sig, vname);
             return subst("$0[0]", vname);
@@ -1508,8 +1508,8 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
             // execute
-            fClass->addExecCode(Statement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
-                                          subst("$0[IOTA&$1] = 0; //M DL 6", vname, T(N - 1))));
+            fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
+                                             subst("$0[IOTA&$1] = 0; //M DL 6", vname, T(N - 1))));
             setVectorNameProperty(sig, vname);
             return subst("$0[IOTA&$1]", vname, T(N - 1));
         }
@@ -1529,7 +1529,7 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         // cerr << "MXD==0 :  " << vname << " := " << exp << endl;
         // no need for a real vector
         fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
-        fClass->addExecCode(Statement(ccs, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+        fClass->addExecCode(OldStatement(ccs, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
 
     } else if (mxd < gGlobal->gMaxCopyDelay) {
         // cerr << "small delay : " << vname << "[" << mxd << "]" << endl;
@@ -1537,15 +1537,16 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         // short delay : we copy
         fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(mxd + 1)));
-        fClass->addExecCode(Statement(ccs, subst("$0[0] = $1;", vname, exp), subst("$0[0] = 0;", vname)));
+        fClass->addExecCode(OldStatement(ccs, subst("$0[0] = $1;", vname, exp), subst("$0[0] = 0;", vname)));
 
         // generate post processing copy code to update delay values
         if (mxd == 1) {
-            fClass->addPostCode(Statement(ccs, subst("$0[1] = $0[0];", vname), ""));
+            fClass->addPostCode(OldStatement(ccs, subst("$0[1] = $0[0];", vname), ""));
         } else if (mxd == 2) {
-            fClass->addPostCode(Statement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), ""));
+            fClass->addPostCode(OldStatement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), ""));
         } else {
-            fClass->addPostCode(Statement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), ""));
+            fClass->addPostCode(
+                OldStatement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), ""));
         }
 
     } else {
@@ -1560,8 +1561,8 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
         // execute
-        fClass->addExecCode(Statement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
-                                      subst("$0[IOTA&$1] = $0;", vname, T(N - 1))));
+        fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
+                                         subst("$0[IOTA&$1] = $0;", vname, T(N - 1))));
     }
 }
 
@@ -1574,7 +1575,7 @@ void ScalarCompiler::ensureIotaCode()
     if (fMaxIota >= 0) {
         fClass->addDeclCode("int \tIOTA;");
         fClass->addClearCode(subst("IOTA = $0;", T(fMaxIota)));
-        fClass->addPostCode(Statement("IOTA = IOTA+1;"));
+        fClass->addPostCode(OldStatement("IOTA = IOTA+1;"));
     }
 }
 
@@ -1618,6 +1619,6 @@ string ScalarCompiler::generateWaveform(Tree sig)
     int    size;
 
     declareWaveform(sig, vname, size);
-    fClass->addPostCode(Statement(subst("idx$0 = (idx$0 + 1) % $1;", vname, T(size))));
+    fClass->addPostCode(OldStatement(subst("idx$0 = (idx$0 + 1) % $1;", vname, T(size))));
     return generateCacheCode(sig, subst("$0[idx$0]", vname));
 }

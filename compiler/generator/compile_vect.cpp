@@ -46,7 +46,7 @@ void VectorCompiler::compileMultiSignal(Tree L)
     for (int i = 0; isList(L); L = tl(L), i++) {
         Tree sig = hd(L);
         fClass->openLoop("count", "");
-        fClass->addExecCode(Statement(subst("output$0[i] = $2$1;", T(i), CS(sig), xcast())));
+        fClass->addExecCode(OldStatement(subst("output$0[i] = $2$1;", T(i), CS(sig), xcast())));
         fClass->closeLoop(sig);
     }
 
@@ -499,7 +499,7 @@ void VectorCompiler::generateVectorLoop(const string& tname, const string& vecna
     fClass->addZone1(subst("$0 \t$1[$2];", tname, vecname, T(gGlobal->gVecSize)));
 
     // -- compute the new samples
-    fClass->addExecCode(Statement(ccs, subst("$0[i] = $1;", vecname, cexp), subst("$0[i] = 0;", vecname)));
+    fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1;", vecname, cexp), subst("$0[i] = 0;", vecname)));
 }
 /**
  * @brief Generate a special condition loop
@@ -519,7 +519,7 @@ void VectorCompiler::generateConditionLoop(const string& tname, const string& ve
     fClass->addZone1(subst("bool \t$0 = false;", vecname));
 
     // -- compute the new samples
-    fClass->addExecCode(Statement(ccs, subst("$0 |= $1;", vecname, cexp), subst("$0 = false;", vecname)));
+    fClass->addExecCode(OldStatement(ccs, subst("$0 |= $1;", vecname, cexp), subst("$0 = false;", vecname)));
 }
 
 /**
@@ -563,13 +563,14 @@ void VectorCompiler::generateDlineLoop(const string& tname, const string& dlname
         fClass->addZone2(subst("$0* \t$1 = &$2[$3];", tname, dlname, buf, dsize));
 
         // -- copy the stored samples to the delay line
-        fClass->addPreCode(Statement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[i];", buf, pmem, dsize), ""));
+        fClass->addPreCode(OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[i];", buf, pmem, dsize), ""));
 
         // -- compute the new samples
-        fClass->addExecCode(Statement(ccs, subst("$0[i] = $1; //machin1", dlname, cexp), ""));
+        fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1; //machin1", dlname, cexp), ""));
 
         // -- copy back to stored samples
-        fClass->addPostCode(Statement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[count+i];", pmem, buf, dsize), ""));
+        fClass->addPostCode(
+            OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[count+i];", pmem, buf, dsize), ""));
 
     } else {
         // Implementation of a ring-buffer delayline
@@ -594,13 +595,13 @@ void VectorCompiler::generateDlineLoop(const string& tname, const string& dlname
         fClass->addClearCode(subst("$0 = 0;", idx_save));
 
         // -- update index
-        fClass->addPreCode(Statement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), ""));  // rien à faire  4
+        fClass->addPreCode(OldStatement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), ""));  // rien à faire  4
 
         // -- compute the new samples
-        fClass->addExecCode(Statement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), ""));
+        fClass->addExecCode(OldStatement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), ""));
 
         // -- save index
-        fClass->addPostCode(Statement(ccs, subst("$0 = count;", idx_save), ""));  // rien à faire  6
+        fClass->addPostCode(OldStatement(ccs, subst("$0 = count;", idx_save), ""));  // rien à faire  6
     }
 }
 
@@ -611,6 +612,6 @@ string VectorCompiler::generateWaveform(Tree sig)
 
     declareWaveform(sig, vname, size);
     fClass->addPostCode(
-        Statement(getConditionCode(sig), subst("idx$0 = (idx$0 + count) % $1;", vname, T(size)), "pas clair 7"));
+        OldStatement(getConditionCode(sig), subst("idx$0 = (idx$0 + count) % $1;", vname, T(size)), "pas clair 7"));
     return generateCacheCode(sig, subst("$0[(idx$0+i)%$1]", vname, T(size)));
 }
