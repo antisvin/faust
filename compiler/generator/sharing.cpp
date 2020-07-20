@@ -201,7 +201,7 @@ void ScalarCompiler::conditionAnnotation(Tree l)
  */
 void ScalarCompiler::conditionAnnotation(Tree t, Tree nc)
 {
-    std::cerr << "IF " << ppsig(nc) << " THEN " << ppsig(t) << endl;
+    // std::cerr << "IF " << ppsig(nc) << " THEN " << ppsig(t) << endl;
     // Check if we need to annotate the tree with new conditions
     auto p = fConditionProperty.find(t);
     if (p != fConditionProperty.end()) {

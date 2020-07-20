@@ -73,7 +73,7 @@ bool Klass::getLoopProperty(Tree sig, Loop*& l)
 void Klass::openLoop(const string& size, const string& cond)
 {
     fTopLoop = new Loop(fTopLoop, size, cond);
-    cerr << "\nOPEN SHARED LOOP(" << size << ", " << cond << ") ----> " << fTopLoop << endl;
+    // cerr << "\nOPEN SHARED LOOP(" << size << ", " << cond << ") ----> " << fTopLoop << endl;
 }
 
 /**
@@ -84,7 +84,7 @@ void Klass::openLoop(const string& size, const string& cond)
 void Klass::openLoop(Tree recsymbol, const string& size, const string& cond)
 {
     fTopLoop = new Loop(recsymbol, fTopLoop, size, cond);
-    cerr << "\nOPEN REC LOOP(" << *recsymbol << ", " << size << ", " << cond << ") ----> " << fTopLoop << endl;
+    // cerr << "\nOPEN REC LOOP(" << *recsymbol << ", " << size << ", " << cond << ") ----> " << fTopLoop << endl;
 }
 
 void Klass::listAllLoopProperties(Tree sig, set<Loop*>& L, set<Tree>& visited)
@@ -125,11 +125,11 @@ void Klass::closeLoop(Tree sig)
     fTopLoop = l->fEnclosingLoop;
     faustassert(fTopLoop);
 
-    l->println(4, cerr);
-    cerr << endl;
+    // l->println(4, cerr);
+    // cerr << endl;
 
     Tree S = symlist(sig);
-    cerr << "CLOSE LOOP :" << l << " with symbols " << *S << endl;
+    // cerr << "CLOSE LOOP :" << l << " with symbols " << *S << endl;
     if (l->isEmpty() || fTopLoop->hasRecDependencyIn(S)) {
         // cout << " will absorb" << endl;
         // empty or dependent loop -> absorbed by enclosing one

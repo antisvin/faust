@@ -71,7 +71,7 @@ void VectorCompiler::compileMultiSignal(Tree L)
 string VectorCompiler::CS(Tree sig)
 {
     string code;
-    cerr << "ENTER VectorCompiler::CS : " << ppsig(sig) << endl;
+    // cerr << "ENTER VectorCompiler::CS : " << ppsig(sig) << endl;
     if (!getCompiledExpression(sig, code)) {
         code = generateCode(sig);
         // cerr << "CS : " << code << " for " << ppsig(sig) << endl;
@@ -112,7 +112,7 @@ string VectorCompiler::CS(Tree sig)
             }
         }
     }
-    cerr << "EXIT VectorCompiler::CS : " << ppsig(sig) << "---code---> " << code << endl;
+    // cerr << "EXIT VectorCompiler::CS : " << ppsig(sig) << "---code---> " << code << endl;
     return code;
 }
 
@@ -153,7 +153,7 @@ string VectorCompiler::generateCodeNonRec(Tree sig)
         // already visited
         return code;
     } else {
-        cerr << "VectorCompiler::generateCodeNonRec( " << ppsig(sig) << " )" << endl;
+        // cerr << "VectorCompiler::generateCodeNonRec( " << ppsig(sig) << " )" << endl;
         code = generateLoopCode(sig);
         setCompiledExpression(sig, code);
         return code;
@@ -174,7 +174,7 @@ string VectorCompiler::generateLoopCode(Tree sig)
 
     l = fClass->topLoop();
     faustassert(l);
-    cerr << "VectorCompiler::generateLoopCode " << ppsig(sig) << endl;
+    // cerr << "VectorCompiler::generateLoopCode " << ppsig(sig) << endl;
     if (needSeparateLoop(sig)) {
         // we need a separate loop unless it's an old recursion
         if (isProj(sig, &i, x)) {
@@ -198,7 +198,7 @@ string VectorCompiler::generateLoopCode(Tree sig)
             faustassert(o);
             if (o->isControlled()) {
                 string cond = getConditionCode(sig);
-                std::cerr << "Need Loop with condition " << cond << std::endl;
+                // std::cerr << "Need Loop with condition " << cond << std::endl;
                 fClass->openLoop("count", cond);
                 string c = ScalarCompiler::generateCode(sig);
                 fClass->closeLoop(sig);
@@ -337,49 +337,49 @@ bool VectorCompiler::needSeparateLoop(Tree sig)
 
     int  i;
     Tree x, y;
-    cerr << "DO WE NEED A SEPARATE LOOP FOR: " << ppsig(sig) << " ?" << endl;
+    // cerr << "DO WE NEED A SEPARATE LOOP FOR: " << ppsig(sig) << " ?" << endl;
     if (o->getMaxDelay() > 0) {
         // cerr << "DLY "; // delayed expressions require a separate loop
-        cerr << "YES, reason " << __LINE__ << endl;
+        // cerr << "YES, reason " << __LINE__ << endl;
         b = true;
     } else if (verySimple(sig) || t->variability() < kSamp) {
         b = false;  // non sample computation never require a loop
-        cerr << "FALSE, reason " << __LINE__ << endl;
+        // cerr << "FALSE, reason " << __LINE__ << endl;
 
     } else if (isSigFixDelay(sig, x, y)) {
         b = false;  //
-        cerr << "FALSE, reason " << __LINE__ << endl;
+        // cerr << "FALSE, reason " << __LINE__ << endl;
 
     } else if (isProj(sig, &i, x)) {
         // cerr << "REC "; // recursive expressions require a separate loop
         b = true;
-        cerr << "YES, reason " << __LINE__ << endl;
+        // cerr << "YES, reason " << __LINE__ << endl;
     } else if ((c > 1) || (o->hasMultiOccurences())) {
-        cerr << ppsig(sig) << " has multiple occurences " << std::endl;
+        // cerr << ppsig(sig) << " has multiple occurences " << std::endl;
         b = true;
-        cerr << "YES, reason " << __LINE__ << endl;
+        // cerr << "YES, reason " << __LINE__ << endl;
     } else if (o->isControlled()) {
-        cerr << ppsig(sig) << " is controlled " << std::endl;
+        // cerr << ppsig(sig) << " is controlled " << std::endl;
         b = true;
-        cerr << "YES, reason " << __LINE__ << endl;
+        // cerr << "YES, reason " << __LINE__ << endl;
 
     } else if (o->isCondition()) {
-        cerr << ppsig(sig) << " is a condition that needs a separate loop ! " << std::endl;
+        // cerr << ppsig(sig) << " is a condition that needs a separate loop ! " << std::endl;
         b = true;
-        cerr << "YES, reason " << __LINE__ << endl;
+        // cerr << "YES, reason " << __LINE__ << endl;
 
     } else {
         // sample expressions that are not recursive, not delayed
         // and not shared, doesn't require a separate loop.
         b = false;
-        cerr << "FALSE, reason " << __LINE__ << endl;
+        // cerr << "FALSE, reason " << __LINE__ << endl;
     }
 
-    if (b) {
-        cerr << "Separate Loop for " << ppsig(sig) << endl;
-    } else {
-        cerr << "Same Loop for " << ppsig(sig) << endl;
-    }
+    // if (b) {
+    //     cerr << "Separate Loop for " << ppsig(sig) << endl;
+    // } else {
+    //     cerr << "Same Loop for " << ppsig(sig) << endl;
+    // }
 
     return b;
 }

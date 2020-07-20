@@ -122,7 +122,7 @@ static void printSameCondGroup(int n, const string& ccond, list<OldStatement>& g
         std::string thenstring = thencode.str();
         std::string elsestring = elsecode.str();
 
-        std::cerr << "ELSE STRING IS:\n" << elsestring << "\nEND" << std::endl;
+        // std::cerr << "ELSE STRING IS:\n" << elsestring << "\nEND" << std::endl;
         if (elsestring.size() == 0) {
             tab(n, fout);
             fout << "if (" << ccond << ") { /" << __FILE__ << ":" << __LINE__;
@@ -235,7 +235,7 @@ bool Loop::isEmpty()
  */
 void Loop::addPreCode(const OldStatement& stmt)
 {
-    cerr << this << "->addExecCode " << stmt << endl;
+    // cerr << this << "->addExecCode " << stmt << endl;
     fPreCode.push_back(stmt);
 }
 
@@ -244,7 +244,7 @@ void Loop::addPreCode(const OldStatement& stmt)
  */
 void Loop::addExecCode(const OldStatement& stmt)
 {
-    cerr << "LOOP : " << this << "->addExecCode " << stmt << endl;
+    // cerr << "LOOP : " << this << "->addExecCode " << stmt << endl;
     fExecCode.push_back(stmt);
 }
 
@@ -253,7 +253,7 @@ void Loop::addExecCode(const OldStatement& stmt)
  */
 void Loop::addPostCode(const OldStatement& stmt)
 {
-    cerr << this << "->addPostCode " << stmt << endl;
+    // cerr << this << "->addPostCode " << stmt << endl;
     fPostCode.push_front(stmt);
 }
 
