@@ -303,11 +303,19 @@ string VectorCompiler::generateCacheCode(Tree sig, const string& exp)
                 return exp;
             } else if ((ctrl || sharing > 1) && !verySimple(sig)) {
                 // shared and not simple : we need a vector
-                // cerr << "ZEC : " << ppsig(sig) << endl;
-                getTypedNames(getCertifiedSigType(sig), "Zec", ctype, vname);
-                generateDelayLine(ctype, vname, d, exp, getConditionCode(sig));
-                setVectorNameProperty(sig, vname);
-                return subst("$0[i]", vname);
+                if (cond) {
+                    // UGLY, TOBEFIXED
+                    getTypedNames(getCertifiedSigType(sig), "KondZec", ctype, vname);
+                    generateConditionLoop(ctype, vname, exp, "");
+                    setVectorNameProperty(sig, vname);
+                    return vname;
+                } else {
+                    getTypedNames(getCertifiedSigType(sig), "Zec", ctype, vname);
+                    generateDelayLine(ctype, vname, d, exp, getConditionCode(sig));
+                    setVectorNameProperty(sig, vname);
+                    return subst("$0[i]", vname);
+                }
+
             } else if (cond && !verySimple(sig)) {
                 // shared and not simple : we need a vector
                 // cerr << "ZEC : " << ppsig(sig) << endl;
