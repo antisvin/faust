@@ -133,7 +133,7 @@ void Klass::closeLoop(Tree sig)
     if (l->isEmpty() || fTopLoop->hasRecDependencyIn(S)) {
         // cout << " will absorb" << endl;
         // empty or dependent loop -> absorbed by enclosing one
-        cerr << "absorbed by : " << fTopLoop << endl;
+        // cerr << "absorbed by : " << fTopLoop << endl;
         fTopLoop->absorb(l);
         // delete l; HACK !!!
     } else {
