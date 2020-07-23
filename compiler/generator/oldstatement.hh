@@ -43,7 +43,14 @@ class OldStatement {
     OldStatement(const std::string& condition, const std::string& thencode, const std::string& elsecode)
         : fHasCondition(true), fCondition(condition), fThenCode(thencode), fElseCode(elsecode)
     {
+        if (condition.size() == 0) {
+            std::cerr << "WARNING EMPTY CONDITION" << std::endl;
+            if (elsecode.size() != 0) {
+                std::cerr << "WARNING WITH NON EMPTY ELSE !!! : " << elsecode << std::endl;
+            }
+        }
     }
+
     OldStatement(const std::string& thencode) : fHasCondition(false), fCondition(""), fThenCode(thencode), fElseCode("")
     {
     }
