@@ -1562,7 +1562,7 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
 
         // execute
         fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
-                                         subst("$0[IOTA&$1] = $0;", vname, T(N - 1))));
+                                         subst("$0[IOTA&$1] = 0;", vname, T(N - 1))));
     }
 }
 
