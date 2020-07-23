@@ -507,7 +507,11 @@ void VectorCompiler::generateVectorLoop(const string& tname, const string& vecna
     fClass->addZone1(subst("$0 \t$1[$2];", tname, vecname, T(gGlobal->gVecSize)));
 
     // -- compute the new samples
-    fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1;", vecname, cexp), subst("$0[i] = 0;", vecname)));
+    if (ccs.size() > 0) {
+        fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1;", vecname, cexp), subst("$0[i] = 0;", vecname)));
+    } else {
+        fClass->addExecCode(OldStatement(subst("$0[i] = $1;", vecname, cexp)));
+    }
 }
 /**
  * @brief Generate a special condition loop
@@ -527,7 +531,11 @@ void VectorCompiler::generateConditionLoop(const string& tname, const string& ve
     fClass->addZone1(subst("bool \t$0 = false;", vecname));
 
     // -- compute the new samples
-    fClass->addExecCode(OldStatement(ccs, subst("$0 |= $1;", vecname, cexp), subst("$0 = false;", vecname)));
+    if (ccs.size() > 0) {
+        fClass->addExecCode(OldStatement(ccs, subst("$0 |= $1;", vecname, cexp), subst("$0 = false;", vecname)));
+    } else {
+        fClass->addExecCode(OldStatement(subst("$0 |= $1;", vecname, cexp)));
+    }
 }
 
 /**
@@ -569,16 +577,26 @@ void VectorCompiler::generateDlineLoop(const string& tname, const string& dlname
 
         fClass->addFirstPrivateDecl(dlname);
         fClass->addZone2(subst("$0* \t$1 = &$2[$3];", tname, dlname, buf, dsize));
+        if (ccs.size() > 0) {
+            // -- copy the stored samples to the delay line
+            fClass->addPreCode(OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[i];", buf, pmem, dsize), ""));
 
-        // -- copy the stored samples to the delay line
-        fClass->addPreCode(OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[i];", buf, pmem, dsize), ""));
+            // -- compute the new samples
+            fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1; //machin1", dlname, cexp), ""));
 
-        // -- compute the new samples
-        fClass->addExecCode(OldStatement(ccs, subst("$0[i] = $1; //machin1", dlname, cexp), ""));
+            // -- copy back to stored samples
+            fClass->addPostCode(
+                OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[count+i];", pmem, buf, dsize), ""));
+        } else {
+            // -- copy the stored samples to the delay line
+            fClass->addPreCode(OldStatement(subst("for (int i=0; i<$2; i++) $0[i]=$1[i];", buf, pmem, dsize)));
 
-        // -- copy back to stored samples
-        fClass->addPostCode(
-            OldStatement(ccs, subst("for (int i=0; i<$2; i++) $0[i]=$1[count+i];", pmem, buf, dsize), ""));
+            // -- compute the new samples
+            fClass->addExecCode(OldStatement(subst("$0[i] = $1; //machin1", dlname, cexp)));
+
+            // -- copy back to stored samples
+            fClass->addPostCode(OldStatement(subst("for (int i=0; i<$2; i++) $0[i]=$1[count+i];", pmem, buf, dsize)));
+        }
 
     } else {
         // Implementation of a ring-buffer delayline
@@ -602,14 +620,27 @@ void VectorCompiler::generateDlineLoop(const string& tname, const string& dlname
         fClass->addClearCode(subst("$0 = 0;", idx));
         fClass->addClearCode(subst("$0 = 0;", idx_save));
 
-        // -- update index
-        fClass->addPreCode(OldStatement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), ""));  // rien à faire  4
+        if (ccs.size() > 0) {
+            // -- update index
+            fClass->addPreCode(
+                OldStatement(ccs, subst("$0 = ($0+$1)&$2;", idx, idx_save, mask), ""));  // rien à faire  4
 
-        // -- compute the new samples
-        fClass->addExecCode(OldStatement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), ""));
+            // -- compute the new samples
+            fClass->addExecCode(OldStatement(ccs, subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask), ""));
 
-        // -- save index
-        fClass->addPostCode(OldStatement(ccs, subst("$0 = count;", idx_save), ""));  // rien à faire  6
+            // -- save index
+            fClass->addPostCode(OldStatement(ccs, subst("$0 = count;", idx_save), ""));  // rien à faire  6
+
+        } else {
+            // -- update index
+            fClass->addPreCode(OldStatement(subst("$0 = ($0+$1)&$2;", idx, idx_save, mask)));  // rien à faire  4
+
+            // -- compute the new samples
+            fClass->addExecCode(OldStatement(subst("$0[($2+i)&$3] = $1;", dlname, cexp, idx, mask)));
+
+            // -- save index
+            fClass->addPostCode(OldStatement(subst("$0 = count;", idx_save)));  // rien à faire  6
+        }
     }
 }
 
@@ -619,7 +650,11 @@ string VectorCompiler::generateWaveform(Tree sig)
     int    size;
 
     declareWaveform(sig, vname, size);
-    fClass->addPostCode(
-        OldStatement(getConditionCode(sig), subst("idx$0 = (idx$0 + count) % $1;", vname, T(size)), "pas clair 7"));
+    std::string ccs = getConditionCode(sig);
+    if (ccs.size() > 0) {
+        fClass->addPostCode(OldStatement(ccs, subst("idx$0 = (idx$0 + count) % $1;", vname, T(size)), ""));
+    } else {
+        fClass->addPostCode(OldStatement(subst("idx$0 = (idx$0 + count) % $1;", vname, T(size))));
+    }
     return generateCacheCode(sig, subst("$0[(idx$0+i)%$1]", vname, T(size)));
 }

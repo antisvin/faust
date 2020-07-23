@@ -760,8 +760,13 @@ string ScalarCompiler::generateVariableStore(Tree sig, const string& exp)
             // need to be preserved because of new enable and control primitives
             fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
             fClass->addInitCode(subst("$0 = 0;", vname));
-            fClass->addExecCode(
-                OldStatement(getConditionCode(sig), subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+            std::string cc = getConditionCode(sig);
+            if (cc.size() == 0) {
+                fClass->addExecCode(OldStatement(subst("$0 = $1;", vname, exp)));
+            } else {
+                fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+            }
+
             break;
     }
     return vname;
@@ -857,8 +862,12 @@ string ScalarCompiler::generateVBargraph(Tree sig, Tree path, Tree min, Tree max
             break;
 
         case kSamp:
-            fClass->addExecCode(
-                OldStatement(getConditionCode(sig), subst("$0 = $1;", varname, exp), subst("$0 = 0;", varname)));
+            std::string cc = getConditionCode(sig);
+            if (cc.size() == 0) {
+                fClass->addExecCode(OldStatement(subst("$0 = $1;", varname, exp)));
+            } else {
+                fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", varname, exp), subst("$0 = 0;", varname)));
+            }
             break;
     }
 
@@ -883,7 +892,12 @@ string ScalarCompiler::generateHBargraph(Tree sig, Tree path, Tree min, Tree max
             break;
 
         case kSamp:
-            fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", varname, exp), "bof bof"));
+            std::string cc = getConditionCode(sig);
+            if (cc.size() == 0) {
+                fClass->addExecCode(OldStatement(subst("$0 = $1;", varname, exp)));
+            } else {
+                fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", varname, exp), subst("$0 = 0;", varname)));
+            }
             break;
     }
 
@@ -1081,8 +1095,14 @@ string ScalarCompiler::generateWRTbl(Tree sig, Tree tbl, Tree idx, Tree data)
             fClass->addZone2(subst("$0[$1] = $2;", tblName, CS(idx), CS(data)));
             break;
         default:
-            fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0[$1] = $2;", tblName, CS(idx), CS(data)),
-                                             subst("$0[$1] = 0;", tblName, CS(idx))));
+            std::string cc = getConditionCode(sig);
+            if (cc.size() == 0) {
+                fClass->addExecCode(OldStatement(subst("$0[$1] = $2;", tblName, CS(idx), CS(data))));
+            } else {
+                fClass->addExecCode(OldStatement(cc, subst("$0[$1] = $2;", tblName, CS(idx), CS(data)),
+                                                 subst("$0[$1] = 0;", tblName, CS(idx))));
+            }
+
             break;
     }
 
@@ -1192,8 +1212,14 @@ string ScalarCompiler::generatePrefix(Tree sig, Tree x, Tree e)
     fClass->addInitCode(subst("$0 = $1;", vperm, CS(x)));
     fClass->addInitCode(subst("$0 \t$1;", type, vtemp));
 
-    fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", vtemp, vperm), subst("$0 = 0;", vtemp)));
-    fClass->addExecCode(OldStatement(getConditionCode(sig), subst("$0 = $1;", vperm, CS(e)), subst("$0 = 0;", vperm)));
+    std::string cc = getConditionCode(sig);
+    if (cc.size() > 0) {
+        fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vtemp, vperm), subst("$0 = 0;", vtemp)));
+        fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vperm, CS(e)), subst("$0 = 0;", vperm)));
+    } else {
+        fClass->addExecCode(OldStatement(subst("$0 = $1;", vtemp, vperm)));
+        fClass->addExecCode(OldStatement(subst("$0 = $1;", vperm, CS(e))));
+    }
     return vtemp;
 }
 
@@ -1476,7 +1502,7 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             return subst("$0[IOTA&$1]", vname, T(N - 1));
         }
     } else {
-        std::cout << " we have a condition on this delay line " << ccs << endl;
+        // std::cout << " we have a condition on this delay line " << ccs << endl;
         if (mxd < gGlobal->gMaxCopyDelay) {
             // short delay : we copy
             fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
@@ -1508,9 +1534,14 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
             // execute
-            fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
-                                             subst("$0[IOTA&$1] = 0; //M DL 6", vname, T(N - 1))));
+            if (ccs.size() > 0) {
+                fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
+                                                 subst("$0[IOTA&$1] = 0; //M DL 6", vname, T(N - 1))));
+            } else {
+                fClass->addExecCode(OldStatement(subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp)));
+            }
             setVectorNameProperty(sig, vname);
+
             return subst("$0[IOTA&$1]", vname, T(N - 1));
         }
     }
@@ -1523,13 +1554,17 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
 void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname, int mxd, const string& exp,
                                        const string& ccs)
 {
-    if (ccs.size() > 0) cerr << "DelayLine with condition " << ccs << endl;
+    // if (ccs.size() > 0) cerr << "DelayLine with condition " << ccs << endl;
     // faustassert(ccs.size() == 0);
     if (mxd == 0) {
         // cerr << "MXD==0 :  " << vname << " := " << exp << endl;
         // no need for a real vector
         fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
-        fClass->addExecCode(OldStatement(ccs, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+        if (ccs.size() > 0) {
+            fClass->addExecCode(OldStatement(ccs, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
+        } else {
+            fClass->addExecCode(OldStatement(subst("$0 = $1;", vname, exp)));
+        }
 
     } else if (mxd < gGlobal->gMaxCopyDelay) {
         // cerr << "small delay : " << vname << "[" << mxd << "]" << endl;
@@ -1537,16 +1572,27 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         // short delay : we copy
         fClass->addDeclCode(subst("$0 \t$1[$2];", ctype, vname, T(mxd + 1)));
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(mxd + 1)));
-        fClass->addExecCode(OldStatement(ccs, subst("$0[0] = $1;", vname, exp), subst("$0[0] = 0;", vname)));
 
         // generate post processing copy code to update delay values
-        if (mxd == 1) {
-            fClass->addPostCode(OldStatement(ccs, subst("$0[1] = $0[0];", vname), ""));
-        } else if (mxd == 2) {
-            fClass->addPostCode(OldStatement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), ""));
+        if (ccs.size() > 0) {
+            fClass->addExecCode(OldStatement(ccs, subst("$0[0] = $1;", vname, exp), subst("$0[0] = 0;", vname)));
+            if (mxd == 1) {
+                fClass->addPostCode(OldStatement(ccs, subst("$0[1] = $0[0];", vname), ""));
+            } else if (mxd == 2) {
+                fClass->addPostCode(OldStatement(ccs, subst("$0[2] = $0[1]; $0[1] = $0[0];", vname), ""));
+            } else {
+                fClass->addPostCode(
+                    OldStatement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), ""));
+            }
         } else {
-            fClass->addPostCode(
-                OldStatement(ccs, subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname), ""));
+            fClass->addExecCode(OldStatement(subst("$0[0] = $1;", vname, exp)));
+            if (mxd == 1) {
+                fClass->addPostCode(OldStatement(subst("$0[1] = $0[0];", vname)));
+            } else if (mxd == 2) {
+                fClass->addPostCode(OldStatement(subst("$0[2] = $0[1]; $0[1] = $0[0];", vname)));
+            } else {
+                fClass->addPostCode(OldStatement(subst("for (int i=$0; i>0; i--) $1[i] = $1[i-1];", T(mxd), vname)));
+            }
         }
 
     } else {
@@ -1561,8 +1607,12 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
         fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
         // execute
-        fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
-                                         subst("$0[IOTA&$1] = 0;", vname, T(N - 1))));
+        if (ccs.size() > 0) {
+            fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp),
+                                             subst("$0[IOTA&$1] = 0;", vname, T(N - 1))));
+        } else {
+            fClass->addExecCode(OldStatement(subst("$0[IOTA&$1] = $2;", vname, T(N - 1), exp)));
+        }
     }
 }
 
