@@ -237,18 +237,18 @@ Block lift(const Block& B)
         if (isIf(s2, c, t, e)) {
             if (inside) {
                 if (C == c) {
-                    // inside same condition
+                    // std::cerr << "inside same condition\n";
                     T = T + t;
                     E = E + e;
                 } else {
-                    // close existing condition and start a new one
+                    // std::cerr << "close existing condition and start a new one\n";
                     R.push_back(cond(C, T, E));
                     C = c;
                     T = t;
                     E = e;
                 }
             } else {
-                // not inside a condition, start a new one
+                // std::cerr << "not inside a condition, start a new one\n";
                 inside = true;
                 C      = c;
                 T      = t;
@@ -290,7 +290,7 @@ Statement lift(const Statement& s)
             }
 
         } else {
-            r = s;
+            r = loop(h, d);
         }
     } else {
         r = s;
