@@ -83,6 +83,10 @@ Tree SignalPromotion::transformation(Tree sig)
             case kDiv:
                 // the result of a division is always a float
                 return sigBinOp(i, smartFloatCast(tx, self(x)), smartFloatCast(ty, self(y)));
+            case kAND:
+            case kOR:
+            case kXOR:
+                return sigBinOp(i, smartIntCast(tx, self(x)), smartIntCast(ty, self(y)));
 
             case kAND:
             case kOR:
