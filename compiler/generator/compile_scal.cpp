@@ -760,13 +760,12 @@ string ScalarCompiler::generateVariableStore(Tree sig, const string& exp)
             // need to be preserved because of new enable and control primitives
             fClass->addDeclCode(subst("$0 \t$1;", ctype, vname));
             fClass->addInitCode(subst("$0 = 0;", vname));
-            std::string cc = getConditionCode(sig);
+            string cc = getConditionCode(sig);
             if (cc.size() == 0) {
                 fClass->addExecCode(OldStatement(subst("$0 = $1;", vname, exp)));
             } else {
                 fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vname, exp), subst("$0 = 0;", vname)));
             }
-
             break;
     }
     return vname;
@@ -862,7 +861,7 @@ string ScalarCompiler::generateVBargraph(Tree sig, Tree path, Tree min, Tree max
             break;
 
         case kSamp:
-            std::string cc = getConditionCode(sig);
+            string cc = getConditionCode(sig);
             if (cc.size() == 0) {
                 fClass->addExecCode(OldStatement(subst("$0 = $1;", varname, exp)));
             } else {
@@ -892,7 +891,7 @@ string ScalarCompiler::generateHBargraph(Tree sig, Tree path, Tree min, Tree max
             break;
 
         case kSamp:
-            std::string cc = getConditionCode(sig);
+            string cc = getConditionCode(sig);
             if (cc.size() == 0) {
                 fClass->addExecCode(OldStatement(subst("$0 = $1;", varname, exp)));
             } else {
@@ -1095,7 +1094,7 @@ string ScalarCompiler::generateWRTbl(Tree sig, Tree tbl, Tree idx, Tree data)
             fClass->addZone2(subst("$0[$1] = $2;", tblName, CS(idx), CS(data)));
             break;
         default:
-            std::string cc = getConditionCode(sig);
+            string cc = getConditionCode(sig);
             if (cc.size() == 0) {
                 fClass->addExecCode(OldStatement(subst("$0[$1] = $2;", tblName, CS(idx), CS(data))));
             } else {
@@ -1212,7 +1211,7 @@ string ScalarCompiler::generatePrefix(Tree sig, Tree x, Tree e)
     fClass->addInitCode(subst("$0 = $1;", vperm, CS(x)));
     fClass->addInitCode(subst("$0 \t$1;", type, vtemp));
 
-    std::string cc = getConditionCode(sig);
+    string cc = getConditionCode(sig);
     if (cc.size() > 0) {
         fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vtemp, vperm), subst("$0 = 0;", vtemp)));
         fClass->addExecCode(OldStatement(cc, subst("$0 = $1;", vperm, CS(e)), subst("$0 = 0;", vperm)));
