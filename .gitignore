@@ -36,3 +36,7 @@ user.mk
 tests/impulse-tests/ir
 ### ESLint
 .eslintrc.json
+scal_es0/
+scal_es1/
+vec_es0/
+vec_es1/
