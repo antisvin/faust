@@ -1,8 +1,12 @@
+---
+author: Yann Orlarey and Stéphane Letz, Grame
+---
+
 # Implémentation de la primitive `enable` en mode _vectoriel_
 
 ## Introduction
 
-Faust (Functional AUdio STreams) est un langage de programmation spécialisé (DSL) dans la synthèse et le traitement du signal audio numérique. Le langage Faust est entièrement compilé. Il peut être utilisé pour programmer de manière efficace une grande variété de plateformes matérielles et logiciels (plugins, systèmes embarqués, smartphones, applications web, etc.). Un programme Faust bénéficie d'une sémantique formelle simple. Il dénote un _circuit audio_ qui prend en entrée des signaux audio et produit en sortie des signaux audio.
+Faust (Functional AUdio STreams) est un langage de programmation spécialisé (DSL) dans la synthèse et le traitement du signal audio numérique. Le langage Faust est entièrement compilé. Il peut être utilisé pour programmer de manière efficace une grande variété de plateformes matérielles et logicielles (plugins, systèmes embarqués, smartphones, applications web, etc.). Un programme Faust bénéficie d'une sémantique formelle simple. Il dénote un _circuit audio_ qui prend en entrée des signaux audio et produit en sortie des signaux audio.
 
 Le travail ici présenté est une extension du langage réalisée dans le cadre d'un contrat entre GRAME et la SATT Pulsalys. L'objet de cette extension est la généralisation de la primitive `enable`, qui existait jusque-là à titre expérimental en mode _scalaire_, afin qu'elle soit utilisable également en mode de compilation _vectoriel_. 
 
@@ -22,7 +26,7 @@ La courbe bleu donne les performances en mode scalaire et la courbe rouge les pe
 
 
 
-Voyons maintenant l'introduction de la fonction `enable` en mode scalaire (courbe jaune). On note que désormais le coût n'est plus constant, mais dépend bien du nombre de modules actifs, ce qui était bien l'objectif recherché. On note également que l'emploi de la fonction `enable`, qui doit décider à chaque instant s'il faut faire certains calculs ou pas, a elle-même un coût. Ainsi, lorsque tous les modules sont activés la version `enable` est plus coûteuse que la version scalaire sans `enable`. Enfin on note qu'à partie de 3 modules activés, la version vectorielle est plus performante. et donc plus intéressante à utiliser, que la version `enable` scalaire.
+Voyons maintenant l'introduction de la fonction `enable` en mode scalaire (courbe jaune). On note que désormais le coût n'est plus constant, mais dépend bien du nombre de modules actifs, ce qui était bien l'objectif recherché. On note également que l'emploi de la fonction `enable`, qui doit décider à chaque instant s'il faut faire certains calculs ou pas, a elle-même un coût. Ainsi, lorsque tous les modules sont activés la version `enable` est plus coûteuse que la version scalaire sans `enable`. Enfin on note qu'à partir de 3 modules activés, la version vectorielle est plus performante. et donc plus intéressante à utiliser, que la version `enable` scalaire.
 
 ![Introduction de `enable` en mode scalaire](/home/orlarey/Documents/FaustInstall/faustprivateEE/rapport/images/Introduction de enable en mode scalaire.png)
 
@@ -30,7 +34,7 @@ Voyons maintenant l'introduction de la fonction `enable` en mode scalaire (courb
 
 Les mesures précédentes montre l’intérêt très limité de ne disposer de la fonction `enable` qu'en mode scalaire. En effet, dès que les calculs sont complexes, la version vectorielle sans `enable` a de fortes chances d'être plus performante que la version scalaire avec `enable`. 
 
-Dans le graphique suivant, la courbe verte montre les résultats de la fonction `enable` que nous avons développés dans le cadre de ce travail pour le mode vectoriel. Comme on peut le voir, elle répond bien à l'objectif. Le coût dépend du nombre de modules actifs et le surcoût lié à l'emploi de la fonction `enable` est très faible puisque quand les 8 effets sont activés, le coût total est le même que pour la version vectorielle sans `enable`. Cela est dû au fait que la décision de faire ou pas un calcul est prise non plus à chaque échantillon, mais une fois par vecteur.
+Dans le graphique suivant, la courbe verte montre les résultats de la fonction `enable` que nous avons développée dans le cadre de ce travail pour le mode vectoriel. Comme on peut le voir, elle répond bien à l'objectif. Le coût dépend du nombre de modules actifs et le surcoût lié à l'emploi de la fonction `enable` est très faible puisque quand les 8 effets sont activés, le coût total est le même que pour la version vectorielle sans `enable`. Cela est dû au fait que la décision de faire ou pas un calcul est prise non plus à chaque échantillon, mais une fois par vecteur.
 
 ![Introduction de enable en mode vectoriel](/home/orlarey/Documents/FaustInstall/faustprivateEE/rapport/images/Introduction de enable en mode vectoriel.png)
 
@@ -90,7 +94,7 @@ bypass(c,fx) = _,_ <: (fx:par(i,2, (_,(1-c):enable))), par(i,2, *(c)) :> _,_;
 
 La longueur de la chaîne d'effets est indiquée ligne 3 du code : `process = fxchain(8); `.  Chaque étape de la chaîne de traitement peut être désactivée individuellement grâce à la fonction `bypass(c,fx)` qui prend en paramètres un signal de contrôle `c` et un effet stéréo `fx`. Lorsque le signal de contrôle `c` vaut 1, l'effet est "bypassé" (désactivé) et le signal audio passe l'étape sans être modifié. A l'inverse, quand le signal de contrôle `c` vaut 0. le signal passe par l'effet, ici la `zitaverb`, une reverb stéréo de qualité. Chaque étape comporte son propre bouton de contrôle de façon à pouvoir être activé/désactivé individuellement.
 
-Comme on peut le voir ligne 7, la fonction `bypass` utilise la primitive `enable`. Celle-ci prend deux signaux d'entrée $x(t)$ et $y(t)$ et, sémantiquement parlant, produit en sortie $z(t)=x(t)*y(t)$. Mais, à la différence d'une multiplication ordinaire, les calculs qui produisent $x(t)$ peuvent être désactivés quand $y(t)$ vaut 0. Il existe du reste une option `-es 0|1` qui permet de désactiver (`-es 0`) la sémantique d'enable et de transformer automatiquement tous les `enable` an multiplications ordinaires. Cette option est très pratique pour tester que le programme avec `enable` sonne bien comme celui avec des multiplications et pour voir les gains de performance introduits par `enable`.
+Comme on peut le voir ligne 7, la fonction `bypass` utilise la primitive `enable`. Celle-ci prend deux signaux d'entrée $x(t)$ et $y(t)$ et, sémantiquement parlant, produit en sortie $z(t)=x(t)*y(t)$. Mais, à la différence d'une multiplication ordinaire, les calculs qui produisent $x(t)$ peuvent être désactivés quand $y(t)$ vaut 0. Il existe du reste une option `-es 0|1` qui permet de désactiver (`-es 0`) la sémantique d'enable et de transformer automatiquement tous les `enable` en multiplications ordinaires. Cette option est très pratique pour tester que le programme avec `enable` sonne bien comme celui avec des multiplications et pour voir les gains de performance introduits par `enable`.
 
 ##### Compilation des variantes
 
@@ -194,7 +198,7 @@ De manière assez surprenante, on notera que la taille de vecteurs optimales pou
 
 ## Code source
 
-L'implémentation de `enable` en mode vectoriel a été réalisée sur un dépôt privée sur github : https://github.com/grame-cncm/faustprivate, auquel Bruno Malfoy de Pulsalys a accès. Nous n'allons détailler ici l'implémentation dans le compilateur de la fonction `enable`, mais plutôt montrer le type de code généré par son utilisation.
+L'implémentation de `enable` en mode vectoriel a été réalisée sur un dépôt privé sur github : https://github.com/grame-cncm/faustprivate, auquel Bruno Malfoy de Pulsalys a accès. Nous n'allons pas détailler ici l'implémentation dans le compilateur de la fonction `enable`, mais plutôt montrer le type de code généré par son utilisation.
 
 Nous allons partir de l'exemple ci dessous, un générateur de bruit blanc dont le niveau est controlé par un slider.
 
@@ -228,7 +232,7 @@ Voici tout d'abord le code généré par le compilateur avec les options de comp
 	}
 ```
 
-Voyons maintenant la version avec `enable` activée : `-es 1 `  (à noter que c'est l'option par defaut et que par conséquent, il n'est pas nécessaire de la préciser). Les calculs sont désormais encadrés par un test portant sur la variable iSlow1 et qui indique quand ils doivent être effectués.
+Voyons maintenant la version avec `enable` activée : `-es 1 `  (à noter que c'est l'option par défaut et que par conséquent, il n'est pas nécessaire de la préciser). Les calculs sont désormais encadrés par un test portant sur la variable iSlow1 et qui indique quand ils doivent être effectués.
 
 ```
 		virtual void compute (int count, FAUSTFLOAT** input, FAUSTFLOAT** output) {
