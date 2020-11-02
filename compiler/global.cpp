@@ -450,7 +450,7 @@ global::global() : TABBER(1), gLoopDetector(1024, 400), gStackOverflowDetector(M
     gErrorMessage = "";
 
     // By default use "cpp" output
-    gOutputLang = (getenv("FAUST_DEFAULT_BACKEND")) ? string(getenv("FAUST_DEFAULT_BACKEND")) : "cpp";
+    gOutputLang = (getenv("FAUST_DEFAULT_BACKEND")) ? string(getenv("FAUST_DEFAULT_BACKEND")) : "ocpp";
 }
 
 // Done after contructor since part of the following allocations need the "global" object to be fully built
@@ -463,9 +463,9 @@ void global::init()
     gSymListProp           = new property<Tree>();
 
     // Essential predefined types
-    gMemoizedTypes   = new property<AudioType*>();
-    gAllocationCount = 0;
-    gMaskDelayLineThreshold  = INT_MAX;
+    gMemoizedTypes          = new property<AudioType*>();
+    gAllocationCount        = 0;
+    gMaskDelayLineThreshold = INT_MAX;
 
     // True by default but only usable with -lang ocpp backend
     gEnableFlag = true;
@@ -574,13 +574,13 @@ void global::init()
     gMathForeignFunctions["tanhf"] = true;
     gMathForeignFunctions["tanh"]  = true;
     gMathForeignFunctions["tanhl"] = true;
-    
+
     gMathForeignFunctions["isnanf"] = true;
-    gMathForeignFunctions["isnan"] = true;
+    gMathForeignFunctions["isnan"]  = true;
     gMathForeignFunctions["isnanl"] = true;
-    
+
     gMathForeignFunctions["isinff"] = true;
-    gMathForeignFunctions["isinf"] = true;
+    gMathForeignFunctions["isinf"]  = true;
     gMathForeignFunctions["isinfl"] = true;
 }
 
