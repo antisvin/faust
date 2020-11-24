@@ -2,7 +2,11 @@
 author: Yann Orlarey and Stéphane Letz, Grame
 ---
 
-# Implémentation de la primitive `enable` en mode _vectoriel_
+# GRAME/PULSALYS 
+
+# Extension du langage Faust ayant pour objet la généralisation de la primitive enable au mode de compilation vectoriel
+
+## Yann Orlarey et Stéphane Letz (GRAME)
 
 ## Introduction
 
