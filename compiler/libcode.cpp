@@ -434,10 +434,10 @@ static bool processCmdline(int argc, const char* argv[])
             gTimingSwitch = true;
             i += 1;
 
-            // double float options
+        // 'real' options
         } else if (isCmd(argv[i], "-single", "--single-precision-floats")) {
             if (float_size && gGlobal->gFloatSize != 1) {
-                throw faustexception("ERROR : cannot using -single, -double or -quad at the same time\n");
+                throw faustexception("ERROR : cannot using -single, -double, -quad or -fp at the same time\n");
             } else {
                 float_size = true;
             }
@@ -446,7 +446,7 @@ static bool processCmdline(int argc, const char* argv[])
 
         } else if (isCmd(argv[i], "-double", "--double-precision-floats")) {
             if (float_size && gGlobal->gFloatSize != 2) {
-                throw faustexception("ERROR : cannot using -single, -double or -quad at the same time\n");
+                throw faustexception("ERROR : cannot using -single, -double, -quad or -fp at the same time\n");
             } else {
                 float_size = true;
             }
@@ -455,11 +455,20 @@ static bool processCmdline(int argc, const char* argv[])
 
         } else if (isCmd(argv[i], "-quad", "--quad-precision-floats")) {
             if (float_size && gGlobal->gFloatSize != 3) {
-                throw faustexception("ERROR : cannot using -single, -double or -quad at the same time\n");
+                throw faustexception("ERROR : cannot using -single, -double, -quad or -fp at the same time\n");
             } else {
                 float_size = true;
             }
             gGlobal->gFloatSize = 3;
+            i += 1;
+            
+        } else if (isCmd(argv[i], "-fp", "--fixed-point")) {
+            if (float_size && gGlobal->gFloatSize != 4) {
+                throw faustexception("ERROR : cannot using -single, -double, -quad or -fp at the same time\n");
+            } else {
+                float_size = true;
+            }
+            gGlobal->gFloatSize = 4;
             i += 1;
 
         } else if (isCmd(argv[i], "-mdoc", "--mathdoc")) {
@@ -825,6 +834,8 @@ static void printHelp()
     cout << tab << "-double     --double-precision-floats   use double precision floats for internal computations."
          << endl;
     cout << tab << "-quad       --quad-precision-floats     use quad precision floats for internal computations."
+         << endl;
+    cout << tab << "-fp         --fixed-point               use fixed-point for internal computations."
          << endl;
     cout << tab
          << "-es 1|0     --enable-semantics 1|0      use enable semantics when 1 (default), and simple multiplication "
