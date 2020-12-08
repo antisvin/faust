@@ -60,21 +60,25 @@ void initFaustFloat()
         numsuffix[1] = "";
         numsuffix[2] = "";
         numsuffix[3] = "";
+        numsuffix[4] = "";
         
         floatname[0] = FLOATMACRO;
         floatname[1] = "f32";
         floatname[2] = "f64";
         floatname[3] = "dummy";
+        floatname[4] = "dummy";
         
         castname[0] = FLOATCASTER;
         castname[1] = "as f32";
         castname[2] = "as f64";
         castname[3] = "(dummy)";
+        castname[4] = "(dummy)";
         
         floatmin[0] = 0;
         floatmin[1] = FLT_MIN;
         floatmin[2] = DBL_MIN;
         floatmin[3] = LDBL_MIN;
+        floatmin[4] = FLT_MIN;
         
         // Specific for C/C++ backends
     } else {
@@ -88,7 +92,7 @@ void initFaustFloat()
         floatname[1] = "float";
         floatname[2] = "double";
         floatname[3] = "quad";
-        floatname[3] = "fixpoint_t";
+        floatname[4] = "fixpoint_t";
         
         castname[0] = FLOATCASTER;
         castname[1] = "(float)";
