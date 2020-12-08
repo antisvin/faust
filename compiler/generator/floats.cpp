@@ -37,12 +37,13 @@
 //          1: single precision float
 //          2: double precision float
 //          3: long double precision float
+//          4: fixed-point
 
-static const char* mathsuffix[4];  // suffix for math functions
-static const char* numsuffix[4];   // suffix for numeric constants
-static const char* floatname[4];   // float types
-static const char* castname[4];    // float castings
-static double      floatmin[4];    // minimum float values before denormals
+static const char* mathsuffix[5];  // suffix for math functions
+static const char* numsuffix[5];   // suffix for numeric constants
+static const char* floatname[5];   // float types
+static const char* castname[5];    // float castings
+static double      floatmin[5];    // minimum float values before denormals
 
 void initFaustFloat()
 {
@@ -51,6 +52,7 @@ void initFaustFloat()
     mathsuffix[1] = "f";
     mathsuffix[2] = "";
     mathsuffix[3] = "l";
+    mathsuffix[4] = "";
     
     // Specific for Rust backend
     if (gGlobal->gOutputLang == "rust") {
@@ -80,21 +82,25 @@ void initFaustFloat()
         numsuffix[1] = "f";
         numsuffix[2] = "";
         numsuffix[3] = "L";
+        numsuffix[4] = "";
         
         floatname[0] = FLOATMACRO;
         floatname[1] = "float";
         floatname[2] = "double";
         floatname[3] = "quad";
+        floatname[3] = "fixpoint_t";
         
         castname[0] = FLOATCASTER;
         castname[1] = "(float)";
         castname[2] = "(double)";
         castname[3] = "(quad)";
+        castname[4] = "(fixpoint_t)";
         
         floatmin[0] = 0;
         floatmin[1] = FLT_MIN;
         floatmin[2] = DBL_MIN;
         floatmin[3] = LDBL_MIN;
+        floatmin[4] = FLT_MIN;
     }
 }
 
@@ -137,6 +143,8 @@ int ifloatsize()
             return 8;
         case 3:
             return 16;
+        case 4:
+            return 4;
         default:
             faustassert(false);
             return 0;
@@ -152,6 +160,8 @@ Typed::VarType itfloat()
             return Typed::kDouble;
         case 3:
             return Typed::kQuad;
+        case 4:
+            return Typed::kFixedPoint;
         default:
             faustassert(false);
             return Typed::kNoType;
@@ -167,19 +177,23 @@ Typed::VarType itfloatptr()
             return Typed::kDouble_ptr;
         case 3:
             return Typed::kQuad_ptr;
+        case 4:
+            return Typed::kFixedPoint_ptr;
         default:
             faustassert(false);
             return Typed::kNoType;
     }
 }
 
-void printfloatdef(std::ostream& fout, bool quad)
+void printfloatdef(std::ostream& fout)
 {
     fout << "#ifndef " << FLOATMACRO << std::endl;
     fout << "#define " << FLOATMACRO << " float" << std::endl;
     fout << "#endif " << std::endl;
     fout << std::endl;
-    if (quad) {
+    if (gGlobal->gFloatSize == 3) {
         fout << "typedef long double quad;" << std::endl;
+    } else if (gGlobal->gFloatSize == 4) {
+        fout << "typedef ap_fixed<32, 8, AP_TRN, AP_SAT> fixpoint_t;" << std::endl;
     }
 }

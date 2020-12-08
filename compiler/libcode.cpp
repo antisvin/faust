@@ -1669,12 +1669,12 @@ static void generateCode(Tree signals, int numInputs, int numOutputs, bool gener
             }
 
             streamCopyUntil(*enrobage.get(), *dst.get(), "<<includeclass>>");
-            printfloatdef(*dst.get(), gGlobal->gFloatSize == 3);
+            printfloatdef(*dst.get());
             old_comp->getClass()->println(0, *dst.get());
             streamCopyUntilEnd(*enrobage.get(), *dst.get());
 
         } else {
-            printfloatdef(*dst.get(), gGlobal->gFloatSize == 3);
+            printfloatdef(*dst.get());
             old_comp->getClass()->println(0, *dst.get());
         }
 
