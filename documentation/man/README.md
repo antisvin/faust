@@ -84,7 +84,7 @@ Code generation options:
 
   **-mcd** \<n>    **--max-copy-delay** \<n>        threshold between copy and ring buffer implementation (default 16 samples).
 
-  **-dlt** \<n>    **--delay-line-threshold** \<n>  threshold between 'mask' and 'select' ring buffer implementation (default INT_MAX samples).
+  **-dlt** \<n>    **--delay-line-threshold** \<n>   threshold between 'mask' and 'select' ring buffer implementation (default INT_MAX samples).
 
   **-mem**        **--memory**                    allocate static in global state using a custom memory manager.
 
