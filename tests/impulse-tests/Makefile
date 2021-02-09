@@ -125,6 +125,9 @@ ocpp:
 vecocpp:
 	$(MAKE) -f Make.gcc outdir=ocpp/double/vec/lv1   lang=ocpp arch=impulsearch.cpp FAUSTOPTIONS="-I dsp -double -vec -lv 1"
 
+vecenable:
+	$(MAKE) -f Make.enable outdir=ocpp/double/vec/lv1   lang=ocpp arch=impulsearch.cpp FAUSTOPTIONS="-I dsp -double -vec -lv 1"
+
 me:
 	$(MAKE) -f Make.gcc outdir=me/double           lang=cpp arch=impulsearch3.cpp FAUSTOPTIONS="-I dsp -double"
 

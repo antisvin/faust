@@ -7,6 +7,14 @@ This test suite allows to check that the compiler generates correct code by comp
 - `faust`, `libfaust.a` and `libfaustmachine.a` must be available from the `../../build/bin` and `../../build/lib/` folders. They must be compiled with all backends.
 - `NodeJS` must be installed to check the wasm/wast backends. See the [NodeJS](https://nodejs.org/) web site.
 
+### How to test the vector enable mode
+
+Run `make vecenable`. It will use `Make.enable` that run all the tests but for each test it dynamically create a `tmp` dsp file that wraps the test with enabled outputs. Here is the code of the generated `tmp` file:
+
+    pgm = component("dsp/HPF.dsp"); process = pgm : par(i, outputs(pgm), enable(_,1-checkbox("ENABLE_314159")));
+
+It should produce the same result that the regular test file.
+
 ### How to run the Tests
 Two test systems co-exist for historical reasons:
 - a system based on makefiles
