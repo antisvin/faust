@@ -1533,14 +1533,9 @@ string ScalarCompiler::generateDelayVecNoTemp(Tree sig, const string& exp, const
             fClass->addClearCode(subst("for (int i=0; i<$1; i++) $0[i] = 0;", vname, T(N)));
 
             // execute
-            if (ccs.size() > 0) {
-                fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
+            fClass->addExecCode(OldStatement(ccs, subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp),
                                                  subst("$0[IOTA&$1] = 0; //M DL 6", vname, T(N - 1))));
-            } else {
-                fClass->addExecCode(OldStatement(subst("$0[IOTA&$1] = $2; //M DL 5", vname, T(N - 1), exp)));
-            }
             setVectorNameProperty(sig, vname);
-
             return subst("$0[IOTA&$1]", vname, T(N - 1));
         }
     }
@@ -1555,6 +1550,7 @@ void ScalarCompiler::generateDelayLine(const string& ctype, const string& vname,
 {
     // if (ccs.size() > 0) cerr << "DelayLine with condition " << ccs << endl;
     // faustassert(ccs.size() == 0);
+    
     if (mxd == 0) {
         // cerr << "MXD==0 :  " << vname << " := " << exp << endl;
         // no need for a real vector
