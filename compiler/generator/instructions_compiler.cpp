@@ -2049,7 +2049,7 @@ ValueInst* InstructionsCompiler::generateFixDelay(Tree sig, Tree exp, Tree delay
 
             // int ridx = widx - delay;
             FIRIndex widx1 = FIRIndex(InstBuilder::genLoadStructVar(vname + "_widx"));
-            pushComputeDSPMethod(InstBuilder::genDecStackVar(ridx_name, InstBuilder::genBasicTyped(Typed::kInt32), widx1 - CS(delay)));
+            pushComputeDSPMethod(InstBuilder::genDecStackVar(ridx_name, InstBuilder::genInt32Typed(), widx1 - CS(delay)));
 
             // dline[((ridx < 0) ? ridx + delay : ridx)];
             FIRIndex ridx1 = FIRIndex(InstBuilder::genLoadStackVar(ridx_name));
@@ -2216,8 +2216,8 @@ ValueInst* InstructionsCompiler::generateDelayLine(ValueInst* exp, Typed::VarTyp
             pushClearMethod(generateInitArray(vname, ctype, mxd + 1));
 
             // int w = widx;
-            pushComputeDSPMethod(InstBuilder::genControlInst(ccs, InstBuilder::genDecStackVar(widx_tmp_name, InstBuilder::genBasicTyped(Typed::kInt32), InstBuilder::genLoadStructVar(widx_name))));
-
+            pushComputeDSPMethod(InstBuilder::genDecStackVar(widx_tmp_name, InstBuilder::genInt32Typed(), InstBuilder::genLoadStructVar(widx_name)));
+       
             // dline[w] = v;
             pushComputeDSPMethod(InstBuilder::genControlInst(ccs, InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(widx_tmp_name), exp)));
 
