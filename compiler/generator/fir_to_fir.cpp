@@ -81,13 +81,19 @@ void ControlExpander::beginCond(ControlInst* inst)
     
     fIfBlockStack.top().fCond = inst->fCond;
     fIfBlockStack.top().fIfInst = new IfInst(inst->fCond->clone(this), new BlockInst(), new BlockInst());
-    fIfBlockStack.top().fIfInst->fThen->pushBackInst(inst->fStatement->clone(this));
+    fIfBlockStack.top().fIfInst->fThen->pushBackInst(inst->fThen->clone(this));
+    if (!dynamic_cast<NullStatementInst*>(inst->fElse)) {
+        fIfBlockStack.top().fIfInst->fElse->pushBackInst(inst->fElse->clone(this));
+    }
 }
 
 void ControlExpander::continueCond(ControlInst* inst)
 {
     faustassert(fIfBlockStack.top().fIfInst != nullptr);
-    fIfBlockStack.top().fIfInst->fThen->pushBackInst(inst->fStatement->clone(this));
+    fIfBlockStack.top().fIfInst->fThen->pushBackInst(inst->fThen->clone(this));
+    if (!dynamic_cast<NullStatementInst*>(inst->fElse)) {
+        fIfBlockStack.top().fIfInst->fElse->pushBackInst(inst->fElse->clone(this));
+    }
 }
 
 void ControlExpander::endCond()

@@ -535,7 +535,9 @@ class FIRInstVisitor : public InstVisitor, public CStringTypeManager {
         tab(fTab, *fOut);
         inst->fCond->accept(this);
         tab(fTab, *fOut);
-        inst->fStatement->accept(this);
+        inst->fThen->accept(this);
+        tab(fTab, *fOut);
+        inst->fElse->accept(this);
         fTab--;
         back(1, *fOut);
         *fOut << "EndControlInst";

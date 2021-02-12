@@ -1129,10 +1129,11 @@ struct Select2Inst : public ValueInst {
 // Contains a condition (derived from 'enable/contol') and a statement to be computed if the cond is true
 struct ControlInst : public StatementInst {
     ValueInst* fCond;
-    StatementInst* fStatement;
+    StatementInst* fThen;
+    StatementInst* fElse;
 
-    ControlInst(ValueInst* cond_inst, StatementInst* exp_inst)
-    : fCond(cond_inst), fStatement(exp_inst)
+    ControlInst(ValueInst* cond_inst, StatementInst* then_inst, StatementInst* else_inst)
+    : fCond(cond_inst), fThen(then_inst), fElse(else_inst)
     {
     }
 
@@ -1445,7 +1446,7 @@ class BasicCloneVisitor : public CloneVisitor {
 
     virtual StatementInst* visit(ControlInst* inst)
     {
-        return new ControlInst(inst->fCond->clone(this), inst->fStatement->clone(this));
+        return new ControlInst(inst->fCond->clone(this), inst->fThen->clone(this), inst->fElse->clone(this));
     }
 
     virtual StatementInst* visit(IfInst* inst)
@@ -1639,7 +1640,8 @@ struct DispatchVisitor : public InstVisitor {
     virtual void visit(ControlInst* inst)
     {
         inst->fCond->accept(this);
-        inst->fStatement->accept(this);
+        inst->fElse->accept(this);
+        inst->fThen->accept(this);
     }
 
     virtual void visit(IfInst* inst)
@@ -2067,10 +2069,10 @@ struct InstBuilder {
         return new Select2Inst(cond_inst, then_inst, else_inst);
     }
 
-    static StatementInst* genControlInst(ValueInst* cond_inst, StatementInst* exp_inst)
+    static StatementInst* genControlInst(ValueInst* cond_inst, StatementInst* then_inst, StatementInst* else_inst)
     {
         // If called with a NullValueInst, then the exp_inst is going to be always computed
-        return (dynamic_cast<NullValueInst*>(cond_inst)) ? exp_inst : new ControlInst(cond_inst, exp_inst);
+        return (dynamic_cast<NullValueInst*>(cond_inst)) ? then_inst : new ControlInst(cond_inst, then_inst, else_inst);
     }
 
     static IfInst* genIfInst(ValueInst* cond_inst, BlockInst* then_inst, BlockInst* else_inst)
