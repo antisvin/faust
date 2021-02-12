@@ -1126,7 +1126,7 @@ struct Select2Inst : public ValueInst {
     virtual int size() const { return std::max(fThen->size(), fElse->size()); }
 };
 
-// Contains a condition (derived from 'enable/contol') and a statement to be computed if the cond is true
+// Contains a condition (derived from 'enable/contol') and then and else statements
 struct ControlInst : public StatementInst {
     ValueInst* fCond;
     StatementInst* fThen;

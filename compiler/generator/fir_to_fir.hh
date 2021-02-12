@@ -711,7 +711,7 @@ struct LoopVariableRenamer : public BasicCloneVisitor {
     BlockInst* getCode(BlockInst* src) { return static_cast<BlockInst*>(src->clone(this)); }
 };
 
-// Expand and rewrite ControlInst as 'IF (cond) {....}' instructions
+// Expand and rewrite ControlInst as 'if (cond) {...} else {...}' instructions
 struct ControlExpander : public BasicCloneVisitor {
     
     // To keep the current condition with the IfInst block which is progressively filled

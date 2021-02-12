@@ -73,7 +73,7 @@ bool sortTypeDeclarations(StatementInst* a, StatementInst* b)
     }
 }
 
-// Expand and rewrite ControlInst as 'IF (cond) {....}' instructions
+// Expand and rewrite ControlInst as 'if (cond) {...} else {...}' instructions
 void ControlExpander::beginCond(ControlInst* inst)
 {
     faustassert(fIfBlockStack.top().fCond == nullptr);
@@ -90,6 +90,7 @@ void ControlExpander::beginCond(ControlInst* inst)
 void ControlExpander::continueCond(ControlInst* inst)
 {
     faustassert(fIfBlockStack.top().fIfInst != nullptr);
+    
     fIfBlockStack.top().fIfInst->fThen->pushBackInst(inst->fThen->clone(this));
     if (!dynamic_cast<NullStatementInst*>(inst->fElse)) {
         fIfBlockStack.top().fIfInst->fElse->pushBackInst(inst->fElse->clone(this));
