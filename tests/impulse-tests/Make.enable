@@ -152,5 +152,5 @@ ir/$(outdir)/control.cpp : dsp/control.dsp
 
 ir/$(outdir)/%.$(ext) : dsp/%.dsp
 	@echo "pgm = component(\"$<\"); process = pgm : par(i, outputs(pgm), enable(_,1-checkbox(\"ENABLE_314159\")));" > tmp
-	$(FAUST) -lang ocpp $(FAUSTOPTIONS) -i -A ../../architecture -a archs/$(arch) tmp  -o $@
+	$(FAUST) -lang $(lang) $(FAUSTOPTIONS) -i -A ../../architecture -a archs/$(arch) tmp  -o $@
     
