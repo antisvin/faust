@@ -2160,12 +2160,12 @@ ValueInst* InstructionsCompiler::generateDelayLine(ValueInst* exp, Typed::VarTyp
 
         // Generates post processing copy code to update delay values
         if (mxd == 1) {
-            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 0, 1), InstBuilder::genNullStatementInst()));
+            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 0, 1)));
         } else if (mxd == 2) {
-            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 1, 2), InstBuilder::genNullStatementInst()));
-            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 0, 1), InstBuilder::genNullStatementInst()));
+            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 1, 2)));
+            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateCopyArray(vname, 0, 1)));
         } else {
-            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateShiftArray(vname, mxd), InstBuilder::genNullStatementInst()));
+            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, generateShiftArray(vname, mxd)));
         }
 
     } else {
@@ -2194,7 +2194,7 @@ ValueInst* InstructionsCompiler::generateDelayLine(ValueInst* exp, Typed::VarTyp
 
                 pushComputeDSPMethod(InstBuilder::genControlInst(ccs,
                                                                  InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(fIOTATable[N]), exp),
-                                                                 InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(fIOTATable[N]), exp)));
+                                                                 InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(fIOTATable[N]), InstBuilder::genInt32NumInst(0))));
 
             } else {
                 FIRIndex value2 = FIRIndex(InstBuilder::genLoadStructVar("IOTA")) & FIRIndex(N - 1);
@@ -2216,20 +2216,14 @@ ValueInst* InstructionsCompiler::generateDelayLine(ValueInst* exp, Typed::VarTyp
             pushClearMethod(generateInitArray(vname, ctype, mxd + 1));
 
             // int w = widx;
-            pushComputeDSPMethod(InstBuilder::genControlInst(ccs,
-                                                             InstBuilder::genDecStackVar(widx_tmp_name, InstBuilder::genBasicTyped(Typed::kInt32), InstBuilder::genLoadStructVar(widx_name)),
-                                                             InstBuilder::genNullStatementInst()));
+            pushComputeDSPMethod(InstBuilder::genControlInst(ccs, InstBuilder::genDecStackVar(widx_tmp_name, InstBuilder::genBasicTyped(Typed::kInt32), InstBuilder::genLoadStructVar(widx_name))));
 
             // dline[w] = v;
-            pushComputeDSPMethod(InstBuilder::genControlInst(ccs,
-                                                             InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(widx_tmp_name), exp),
-                                                             InstBuilder::genNullStatementInst()));
+            pushComputeDSPMethod(InstBuilder::genControlInst(ccs, InstBuilder::genStoreArrayStructVar(vname, InstBuilder::genLoadStackVar(widx_tmp_name), exp)));
 
             // w = w + 1;
             FIRIndex widx_tmp1 = FIRIndex(InstBuilder::genLoadStackVar(widx_tmp_name));
-            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs,
-                                                                 InstBuilder::genStoreStackVar(widx_tmp_name, widx_tmp1 + 1),
-                                                                 InstBuilder::genNullStatementInst()));
+            pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs, InstBuilder::genStoreStackVar(widx_tmp_name, widx_tmp1 + 1)));
 
             // w = ((w == delay) ? 0 : w);
             FIRIndex widx_tmp2 = FIRIndex(InstBuilder::genLoadStackVar(widx_tmp_name));
@@ -2237,12 +2231,10 @@ ValueInst* InstructionsCompiler::generateDelayLine(ValueInst* exp, Typed::VarTyp
                                                                  InstBuilder::genStoreStackVar(widx_tmp_name,
                                                                    InstBuilder::genSelect2Inst(widx_tmp2 == FIRIndex(mxd + 1),
                                                                                                FIRIndex(0),
-                                                                                               widx_tmp2)),
-                                                                 InstBuilder::genNullStatementInst()));
+                                                                                               widx_tmp2))));
             // *widx = w
             pushPostComputeDSPMethod(InstBuilder::genControlInst(ccs,
-                                                                 InstBuilder::genStoreStructVar(widx_name, InstBuilder::genLoadStackVar(widx_tmp_name)),
-                                                                 InstBuilder::genNullStatementInst()));
+                                                                 InstBuilder::genStoreStructVar(widx_name, InstBuilder::genLoadStackVar(widx_tmp_name))));
         }
     }
 

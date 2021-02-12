@@ -2069,7 +2069,7 @@ struct InstBuilder {
         return new Select2Inst(cond_inst, then_inst, else_inst);
     }
 
-    static StatementInst* genControlInst(ValueInst* cond_inst, StatementInst* then_inst, StatementInst* else_inst)
+    static StatementInst* genControlInst(ValueInst* cond_inst, StatementInst* then_inst, StatementInst* else_inst = new NullStatementInst())
     {
         // If called with a NullValueInst, then the exp_inst is going to be always computed
         return (dynamic_cast<NullValueInst*>(cond_inst)) ? then_inst : new ControlInst(cond_inst, then_inst, else_inst);
